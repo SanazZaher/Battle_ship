@@ -1,24 +1,30 @@
 import random
 
-#step 1: Grid
+# step 1: Grid
 
-def battelship_map (ship_position):
- """to make a 10 x 10 grid where the ships will be placed in"""
+def battleship_map (ship_position):
+    """to make a 10 x 10 grid where the ships will be placed in"""
 
-grid =[]           # empty list to store the rows and coloms
+    grid =[]           # empty list to store the rows and coloms
 
-row_size = 10      # setting variable for row 
-colom_size = 10    # setting variable to coloc
+    row_size = 10      # setting variable for row 
+    column_size = 10    # setting variable to coloc
 
-for row in range (row_size):     # 2 nested for loops to make the grid
-    row = []                                    
-    for _ in range (colom_size):
-        
-        row.append (".")
-    grid.append(row)
+    for i in range (row_size):     # 2 nested for loops to make the grid
+        row = []                                    
+        for j in range (column_size):
+            row.append (".")
+        grid.append(row)
 
-for row in grid:
-    print(" ".join(row))
+    for position in ship_position:
+        row, column = position
+        grid[row][column] = "x"
+
+    for row in grid:
+        print(" ".join(row))
+
+battleship_map([(0,0),(1,0),(2,2),(4,3),(8,9),(8,9)])
+   
 
 
 
