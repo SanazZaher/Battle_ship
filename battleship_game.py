@@ -59,8 +59,6 @@ def users_ships_positions(grid):
                 break
             else:
                 print("Invalid row. Please choose a number from 0 to 9 for the row.")
-                
-
         while True:    # as long as the condition is True, ask the user for the column alphabet 
 
             user_column = input("Choose a capital letter from A-J for the column position of your ship:").upper()
@@ -68,12 +66,12 @@ def users_ships_positions(grid):
             if user_column in column_letters:    # getting the key value of each letter from dictionary and checking if its valid 
 
                 column = column_letters[user_column]
-                break 
+                break
             else:
                 print("Invalid column. Please choose a capital letter from A to J.")
 
         grid[row][column] = "X"    # positioning the X in the users chosen columns and rows
-    
+    return grid
 
 
 users_grid = users_ships_positions(grid)
