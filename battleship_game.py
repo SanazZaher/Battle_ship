@@ -79,3 +79,25 @@ users_grid = users_ships_positions(grid)
 # printing the grid after ships placed
 print("User's Board:")
 print_board(users_grid)
+
+# step 3: compute places ships randomly 
+
+def computers_ships_positions(users_grid):
+    """Places the computer's ships randomly on the user's grid."""
+
+    num_ships = 5    # Limiting the number of ships for the computer
+
+    for i in range(num_ships):    # Loop for each ship
+        while True:
+            row = random.randrange(0, 10)
+            column = random.randrange(0, 10)
+
+            if users_grid[row][column] != "X":    # Checking if the place has already been taken
+                users_grid[row][column] = "X"
+                break  # Break out of the inner loop once a ship is successfully placed
+
+    return users_grid
+
+computers_grid = computers_ships_positions(users_grid) 
+print("Computer's Board:")
+print_board(computers_grid)
