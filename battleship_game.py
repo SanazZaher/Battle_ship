@@ -1,3 +1,12 @@
+"""
+Grid representation:
+ "." = Empty cell (Water)
+ "o" = Miss (Shot fired at this location, but it's empty/water)
+ "X" = User Ship
+ "P" = Computer Ship
+ "#" = Ship is completely sunk
+ "H" = Part of the ship is hit
+"""
 import random
 # making a dictionary to store the values of each letter
 column_letters = {
@@ -34,7 +43,7 @@ def battleship_map():
     for i in range(10):   # looping through each row
         row = []
         for j in range(10):    # looping through each column
-            row.append(".")
+            row.append(".")_
         grid.append(row)
     return grid
 
