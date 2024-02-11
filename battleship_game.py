@@ -55,18 +55,22 @@ def users_ships_positions(grid):
     ship_lengths = [3, 4, 2, 5, 3]  # List of Cell lengths of the 5 ships
 
     for i in range(len(ship_lengths)): 
-        ship = i +1 #ship number starting from 1
-        lenght = ship_lengths[i]
-             # To ask the column and row for each ship separately 
+        ship = i +1    # ship number starting from 1
+        length = ship_lengths[i]
+
+        # To ask the column and row for each ship separately 
         print(f"Where do you want ship ", ship,"?")
 
         while True:
-            row = int(input("Choose a number from 0-9 for the row position of your ship:"))
+            try:    # checking input error
+                row = int(input("Choose a number from 0-9 for the row position of your ship:"))
 
-            if 0 <= row <= 9:     # checking if the user entered a valid number for row 
-                break
-            else:
-                print("Invalid row. Please choose a number from 0 to 9 for the row.")
+                if 0 <= row <= 9:     # checking if the user entered a valid number for row 
+                    break
+                else:
+                    print("Invalid row. Please choose a number from 0 to 9 for the row.")
+            except ValueError:
+                print("Invalid input, enter a valid row number")
 
         while True:
             user_column = input("Choose a letter from A-J for the column position of your ship:").upper()
@@ -77,12 +81,33 @@ def users_ships_positions(grid):
             else:
                 print("Invalid column. Please choose a capital letter from A to J.")
 
-        grid[row][column] = "X"    # Placing the ship at the specified position on the grid.
+        while True:       
+            try:
+                orientation = input("Choose orientation (H for horizontal, V for vertical): ").upper()
+                if orientation == "H":
+                    if column + length > 10:
+                        raise ValueError("Invalid ship placement. Ship goes out of grid.")
+                    for i in range(length):
+                        grid[row][column + i] = "X"
+                    break
+                elif orientation == "V":
+                    if row + length > 10:
+                        raise ValueError("Invalid ship placement. Ship goes out of grid.")
+                    for i in range(length):
+                        grid[row + i][column] = "X"
+                    break
+                else:
+                    print("Invalid orientation. Please choose H for horizontal or V for vertical.")
+                continue
+            except ValueError as e:
+                print(e)
+        print("\nCurrent Board:")
+        print_board(grid)   # Printing the current board after placing each ship
     return grid
 
 # printing the initial grid
 grid = battleship_map()    
-print("Initial Board:")
+print("\nInitial Board:")
 print_board(grid)
 
 # user places the ships
@@ -113,3 +138,4 @@ def computers_ships_positions(users_grid):
 computers_grid = computers_ships_positions(users_grid) 
 print("Computer's Board:")
 print_board(computers_grid)
+users_grid = users_ships_positions(grid)
