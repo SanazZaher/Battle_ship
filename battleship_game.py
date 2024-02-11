@@ -52,10 +52,13 @@ def battleship_map():
 def users_ships_positions(grid):
     """Allows the user to place their ships on the grid."""
     num_ships = 5     # limiting the number of ships to 5 
+    ship_lengths = [3, 4, 2, 5, 3]  # List of Cell lengths of the 5 ships
 
-
-    for ship in range(num_ships):      # To ask the column and row for each ship separately 
-        print("Where do you want ship ", ship + 1, "?")
+    for i in range(len(ship_lengths)): 
+        ship = i +1 #ship number starting from 1
+        lenght = ship_lengths[i]
+             # To ask the column and row for each ship separately 
+        print(f"Where do you want ship ", ship,"?")
 
         while True:
             row = int(input("Choose a number from 0-9 for the row position of your ship:"))
