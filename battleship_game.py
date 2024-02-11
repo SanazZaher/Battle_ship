@@ -43,7 +43,7 @@ def battleship_map():
     for i in range(10):   # looping through each row
         row = []
         for j in range(10):    # looping through each column
-            row.append(".")_
+            row.append(".")
         grid.append(row)
     return grid
 
