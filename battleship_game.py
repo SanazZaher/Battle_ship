@@ -52,12 +52,13 @@ def battleship_map():
 def users_ships_positions(grid):
     """Allows the user to place their ships on the grid."""
     num_ships = 5     # limiting the number of ships to 5 
+    ships_placed = 0 
     ship_lengths = [3, 4, 2, 5, 3]  # List of Cell lengths of the 5 ships
 
     for i in range(len(ship_lengths)): 
         ship = i +1    # ship number starting from 1
         length = ship_lengths[i]
-
+        
         # To ask the column and row for each ship separately 
         print(f"Where do you want ship ", ship,"?")
 
@@ -83,14 +84,14 @@ def users_ships_positions(grid):
 
         while True:       
             try:
-                orientation = input("Choose orientation (H for horizontal, V for vertical): ").upper()
-                if orientation == "H":
+                users_ships_orientation = input("Choose orientation (H for horizontal, V for vertical): ").upper()
+                if users_ships_orientation == "H":
                     if column + length > 10:
                         raise ValueError("Invalid ship placement. Ship goes out of grid.")
                     for i in range(length):
                         grid[row][column + i] = "X"
                     break
-                elif orientation == "V":
+                elif users_ships_orientation == "V":
                     if row + length > 10:
                         raise ValueError("Invalid ship placement. Ship goes out of grid.")
                     for i in range(length):
@@ -101,6 +102,11 @@ def users_ships_positions(grid):
                 continue
             except ValueError as e:
                 print(e)
+            
+        ships_placed += 1    # to stop the questions after 5 ships are placed on the grid
+        if ships_placed == num_ships:
+            break
+        
         print("\nCurrent Board:")
         print_board(grid)   # Printing the current board after placing each ship
     return grid
@@ -123,19 +129,45 @@ def computers_ships_positions(users_grid):
     """Places the computer's ships randomly on the user's grid."""
 
     num_ships = 5    # Limiting the number of ships for the computer
+    pc_ships_placed = 0 
+    ship_lengths = [3, 4, 2, 5, 3]  # List of Cell lengths of the 5 ships
+    for i in range(len(ship_lengths)):    # Loop for each ship
+        ships = i + 1
+        length = ship_lengths [i]
 
-    for i in range(num_ships):    # Loop for each ship
         while True:
             row = random.randrange(0, 10)
             column = random.randrange(0, 10)
 
-            if users_grid[row][column] != "X":    # Checking if the place has already been taken
-                users_grid[row][column] = "X"
-                break  # Break out of the inner loop once a ship is successfully placed
+            # orientation
+            if users_grid[row][column] != "X":    # if the place is empty 
+                pc_ships_orientation = random.choice(["H", "V"])    # random choice for orientation
 
+                # situation Horizontal
+                if pc_ships_orientation == "H":
+                    if column + length <= 10:    # not to place it out of the grid 
+                        for j in range(length):
+                            if users_grid[row][column + j] != "X":    # check if the place is not been marked by user
+                                users_grid[row][column + j] = "P"
+                            else:
+                                break
+                        else:
+                            pc_ships_placed += 1 # then add the next ship
+                            break
+
+                # situation vertical
+                elif pc_ships_orientation == "V":
+                    if row + length <= 10:
+                        for j in range(length):
+                            if users_grid[row + j][column] != "X":
+                               users_grid[row+ j][column] = "P"
+                            else:
+                               break 
+                        else:
+                            pc_ships_placed += 1 
+                            break
     return users_grid
 
 computers_grid = computers_ships_positions(users_grid) 
 print("Computer's Board:")
 print_board(computers_grid)
-users_grid = users_ships_positions(grid)
