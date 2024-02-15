@@ -61,7 +61,8 @@ def users_ships_positions(grid):
         
         # To ask the column and row for each ship separately 
         print(f"Where do you want ship ", ship,"?")
-
+        
+        # Row
         while True:
             try:    # checking input error
                 row = int(input("Choose a number from 0-9 for the row position of your ship:"))
@@ -72,7 +73,7 @@ def users_ships_positions(grid):
                     print("Invalid row. Please choose a number from 0 to 9 for the row.")
             except ValueError:
                 print("Invalid input, enter a valid row number")
-
+        # column
         while True:
             user_column = input("Choose a letter from A-J for the column position of your ship:").upper()
 
@@ -82,6 +83,7 @@ def users_ships_positions(grid):
             else:
                 print("Invalid column. Please choose a capital letter from A to J.")
 
+        # orientation
         while True:       
             try:
                 users_ships_orientation = input("Choose orientation (H for horizontal, V for vertical): ").upper()
@@ -171,3 +173,50 @@ def computers_ships_positions(users_grid):
 computers_grid = computers_ships_positions(users_grid) 
 print("Computer's Board:")
 print_board(computers_grid)
+
+# step 4
+def users_attack(users_grid, ships):
+    """ Allows the user to guess the pc's ships place and remove them from the grid"""
+
+    shooted_bullets= 0
+    bullet_num = 10
+
+    while True:
+        for i in range(bullet_num):
+            bullet = i + 1 
+            print(f"Let's attack! where do you want to shoot your bullet", bullet,"at? ")
+        # row
+        while True:
+            try:
+                users_bullet_row =int(input("choose the row:")) 
+                if 0 <= users_bullet_row <= 9:
+                   break
+                else:
+                    print("Invalid row. Please choose a number from 0 to 9 for the row.")
+            except ValueError:
+                print("Invalid input, enter a valid row number")
+
+        # column
+        while True:
+                column = input("choose the column: ").upper()
+                if column in column_letters:
+                    users_bullet_column = column_letters[column]
+                    break
+                else:
+                    print("Invalid column. Please choose a capital letter from A to J.")
+
+        # (Target check)bullet is shot we have different situation:
+        target = users_grid[users_bullet_row][users_bullet_column]
+        
+        # 1)hit the water/miss = show O 
+        if  target== ".": # check if the position chose is .
+            users_grid[users_bullet_row][users_bullet_column] = "O"    # then mark an O there
+            print("Miss! You hit the water.")
+
+        # 2)hit the part of ship = show 
+        elif target == "X":
+            users_grid[users_bullet_row][users_bullet_column] = "H"
+            print("Hit! You hit part of a ship.")
+            
+    # if all the H are the same size as length of ship then replace them all with "#"
+    
