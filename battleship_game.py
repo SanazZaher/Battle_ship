@@ -100,7 +100,11 @@ def users_ships_positions(grid):
                     continue
             except ValueError as e:
                 print(e)
-
+        # checking to not overlap ships
+        for position in positions:
+            if grid[position[0]][position[1]] == "X" or grid[position[0]][position[1]] == "P":
+                print("Invalid position! This position is already occupied by another ship.")
+                return None 
         # add ships to the list
         ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
 
@@ -153,6 +157,9 @@ def computers_ships_positions(users_grid):
         for position in positions:
             if users_grid[position[0]][position[1]] != "X": # check the position
                 users_grid[position[0]][position[1]] = "P"
+        pc_ships_placed += 1
+        if pc_ships_placed == num_ships:
+            break
     return users_grid, pc_ships
 
 # step 4
@@ -224,52 +231,47 @@ def users_attack(users_grid, pc_ships):
 
 # step 5
 def computers_attack(users_grid, users_ships):
-    """pc hits the bullets randomly and gives the board updated"""
-
+    """Computer attacks the user's grid randomly and gives the updated board."""
     bullet_num = 10
+
     for bullet in range(1, bullet_num + 1):
         print(f"Computer's turn to attack (bullet {bullet}): ")
 
         while True:
-            computers_bullet_row = random.randit(0,9)
-            computers_bullet_column = random.randit(0,9)
-            break
-    target = users_grid[computers_bullet_row][computers_bullet_column]
+            computers_bullet_row = random.randint(0, 9)
+            computers_bullet_column = random.randint(0, 9)
 
-    if target == "X":  # if the bullet hits the users ship
-        print("Hit! Computer hit part of your ship.")
-        users_grid[computers_bullet_row][computers_bullet_column c] = "H"  # Mark as hit
-        print_board(users_grid)
+            target = users_grid[computers_bullet_row][computers_bullet_column]
 
-    elif target == "o":
-        print("computer hit the water. ")
-        users_grid[computers_bullet_row][computers_bullet_column] = "o"  # Mark as hit
-        print_board(users_grid)
+            if target == "X":  # Computer hit the user's ship
+                print("Hit! Computer hit part of your ship.")
+                users_grid[computers_bullet_row][computers_bullet_column] = "H"  # Mark as hit
+                print_board(users_grid)
+                for ship in users_ships:
+                    if (computers_bullet_row, computers_bullet_column) in ship["positions"]:
+                        ship["hits"] += 1
+                        if ship["hits"] == ship["length"]:
+                            print(f"Computer sunk your {ship['name']}!")
 
-        for ship in users_ships:
-                if (computers_bullet_row, computers_bullet_column) in ship["positions"]:
-                    ship["hits"] += 1
-                    if ship["hits"] == ship["length"]:
-                        print(f"Computer sunk your {ship['name']}!")
+                            # Mark the ship as sunk on the grid
+                            for position in ship["positions"]:
+                                users_grid[position[0]][position[1]] = "~" if users_grid[position[0]][position[1]] != "H" else "H" # Mark as sunk
+                            users_ships.remove(ship)  # Remove the ship from the list
+                            print_board(users_grid)
+                            # Check if all user ships are sunk
+                            if not users_ships:
+                                print("Game Over. Computer sunk all your ships!")
+                            break
+                else:  # Computer hit but ship not sunk
+                    break
 
-                        # Mark the ship as sunk on the grid
-                        for position in ship["positions"]:
-                            users_grid[position[0]][position[1]] = "~" if users_grid[position[0]][position[1]] !="H" else "H" # Mark as sunk
-                        users_ships.remove(ship)  # Remove the ship from the list
-                        print_board(users_grid)
-                        # Check if all user ships are sunk
-                        if not users_ships:
-                            print("Game Over. Computer sunk all your ships!")
-                        break
-                    else:  # Computer missed
-                        print("Miss! Computer hit the water.")
-                        users_grid[computers_bullet_row][computers_bullet_column] = "o"  # Mark as a miss on water
-                        print_board(users_grid)
-                else:  # Computer missed
-                    print("Miss! Computer hit the water.")
-                    users_grid[computers_bullet_row][computers_bullet_column] = "o"  # Mark as a miss on water
-                    print_board(users_grid)
-        
+            elif target == "o":  # Computer missed
+                print("Miss! Computer hit the water.")
+                users_grid[computers_bullet_row][computers_bullet_column] = "o"  # Mark as a miss on water
+                print_board(users_grid)
+                break
+
+    print("Computer's turn is over.")
 
 def main():
     # Printing the initial grid
