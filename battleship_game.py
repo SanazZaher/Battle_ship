@@ -135,28 +135,29 @@ def computers_ships_positions(users_grid):
         while True:
             row = random.randrange(0, 10)
             column = random.randrange(0, 10)
+            # checking if the position is already occupied by users ships
+            if users_grid[row][column] == "X":
+                continue  # if its occupied continue and choose another position  
 
             # orientation
-            if users_grid[row][column] != "X":    # if the place is empty 
-                pc_ships_orientation = random.choice(["H", "V"])    # random choice for orientation
+            pc_ships_orientation = random.choice(["H", "V"])    # random choice for orientation
 
-                # situation Horizontal
-                if pc_ships_orientation == "H":
-                    if column + length <= 10:    # not to place it out of the grid 
-                        positions = [(row,column + i) for i in range(length)]
-                        break
+            # situation Horizontal
+            if pc_ships_orientation == "H":
+                if column + length <= 10:    # not to place it out of the grid 
+                    positions = [(row,column + i) for i in range(length)]
+                    break
 
-                # situation vertical
-                elif pc_ships_orientation == "V":
-                    if row + length <= 10:
-                        positions = [(row + i ,column) for i in range(length)]
-                        break 
+            # situation vertical
+            elif pc_ships_orientation == "V":
+                if row + length <= 10:
+                    positions = [(row + i ,column) for i in range(length)]
+                    break 
         # add ships to the list
         pc_ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
          # then mark the grids with pc ships
         for position in positions:
-            if users_grid[position[0]][position[1]] != "X": # check the position
-                users_grid[position[0]][position[1]] = "P"
+            users_grid[position[0]][position[1]] = "P"
         pc_ships_placed += 1
         if pc_ships_placed == num_ships:
             break
