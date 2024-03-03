@@ -88,10 +88,16 @@ def users_ships_positions(grid):
 
         # checking to not overlap ships
         for position in positions:
-            if grid[position[0]][position[1]] == "X" or grid[position[0]][position[1]] == "P":
+            if grid[position[0]][position[1]] == "X":
                 print("Invalid position! This position is already occupied by another ship.")
                 return None 
-            
+            # Check ships cells for overlap, ships can't be placed next to each other 
+            for i in range(-1, 2):
+                for j in range(-1, 2):
+                    if (position[0] + i >= 0 and position[0] + i < 10) and (position[1] + j >= 0 and position[1] + j < 10):
+                        if grid[position[0] + i][position[1] + j] == "X":
+                            print("Invalid position! Ships cannot be placed adjacent to each other.")
+                            return None            
         # add ships to the list
         ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
 
@@ -140,7 +146,7 @@ def computers_ships_positions(users_grid, debug_mode = False):
                 if row + length <= 10:
                     positions = [(row + i ,column) for i in range(length)]
                     break 
-                
+
         # add ships to the list
         pc_ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
 
