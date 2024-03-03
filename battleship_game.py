@@ -23,22 +23,7 @@ column_letters = {
     "I": 8,
     "J": 9,
 }  
- # step 1: Grid
-
-def print_board(grid):
-    """Prints the board with row numbers, column letters, and ships marked with 'X'."""
-    
-    print(" ", end=" ")    # printing the column letters
-    for letter in column_letters.keys():  
-        print(letter, end=" ")
-    print()
-
-    for i in range(len(grid)):    # printing each row with numbers
-        print(i, end=" ")  
-        for j in range(len(grid[i])):
-            print(grid[i][j], end=" ")
-        print()
-
+# step 1: Grid
 def battleship_map():
     """Generates a 10x10 grid for the battleship game."""
     grid = []
@@ -56,9 +41,9 @@ def users_ships_positions(grid):
     num_ships = 5     # limiting the number of ships to 5 
     ships = []   # list to store the ships
     ships_placed = 0 
-    ship_info = [("Carrier", 5), ("Battleship", 4), ("Cruiser", 3), ("Submarine", 3), ("Destroyer", 2)]  # List of Cell lengths of the 5 ships and their names
+    ship_info = [("Carrier", 5), ("Battleship", 4), ("Cruiser", 3), ("Submarine", 3), ("Destroyer", 2)]  # List of tupples with Cell lengths of the 5 ships and their names
 
-    for ship_name, length in ship_info: 
+    for ship_name, length in ship_info: # tupple unpacking
         print(f"Where do you want {ship_name} (length:{length})?")
         
         # Row
@@ -100,11 +85,13 @@ def users_ships_positions(grid):
                     continue
             except ValueError as e:
                 print(e)
+
         # checking to not overlap ships
         for position in positions:
             if grid[position[0]][position[1]] == "X" or grid[position[0]][position[1]] == "P":
                 print("Invalid position! This position is already occupied by another ship.")
                 return None 
+            
         # add ships to the list
         ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
 
@@ -123,8 +110,8 @@ def users_ships_positions(grid):
 
 # step 3: compute places ships randomly 
 
-def computers_ships_positions(users_grid):
-    """Places the computer's ships randomly on the user's grid."""
+def computers_ships_positions(users_grid, debug_mode = False):  
+    """Places the computer's ships randomly on the user's grid."""   # adding the debug mode for the pc ships to not display them on the board
 
     num_ships = 5    # Limiting the number of ships for the computer
     pc_ships_placed = 0 
@@ -153,15 +140,38 @@ def computers_ships_positions(users_grid):
                 if row + length <= 10:
                     positions = [(row + i ,column) for i in range(length)]
                     break 
+                
         # add ships to the list
         pc_ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
+
          # then mark the grids with pc ships
         for position in positions:
             users_grid[position[0]][position[1]] = "P"
         pc_ships_placed += 1
         if pc_ships_placed == num_ships:
             break
+
+    if debug_mode:
+        print("\nComputer's ships:")
+        print_board(users_grid)  # Printing computer's ships for debugging
+
     return users_grid, pc_ships
+
+def print_board(grid, reveal= False):
+    """Prints the board with row numbers, column letters, and ships marked with 'X'."""
+    print(" ", end=" ")    # Printing the column letters
+    for letter in column_letters.keys():  
+        print(letter, end=" ")
+    print()
+
+    for i in range(len(grid)):    # Printing each row with numbers
+        print(i, end=" ")  
+        for j in range(len(grid[i])):
+            if not reveal and grid[i][j] == "P":  # If not reveal mode and grid cell has a PC ship, print "." instead
+                print(".", end=" ")
+            else:
+                print(grid[i][j], end=" ")
+        print()
 
 # step 4
 def users_attack(users_grid, pc_ships):
@@ -200,7 +210,7 @@ def users_attack(users_grid, pc_ships):
 
         elif target == "P":  # User hit the computer's ship
             print("Hit! You hit part of a ship.")
-            users_grid[users_bullet_row][users_bullet_column] = "H"  # Mark as hit
+            users_grid[users_bullet_row][users_bullet_column] = "C"  # Mark as hit
             print_board(users_grid)
 
             # Check if the ship is sunk
@@ -281,22 +291,29 @@ def main():
     print_board(grid)
 
     # User places the ships
-    users_grid, user_ships = users_ships_positions(grid)
+    users_grid, users_ships = users_ships_positions(grid)
     print("User's Board:")
-    print_board(users_grid)
+    print_board(users_grid, reveal= False)  # Change reveal to True
 
     # Computer places the ships
-    users_grid, computer_ships = computers_ships_positions(users_grid)
-    print("Computer's Board:")
-    print_board(users_grid)
+    users_grid, pc_ships = computers_ships_positions(users_grid)
 
-    # User attacks computer's ships
-    users_grid, game_over = users_attack(users_grid, computer_ships)
+    # Displaying the board with all ships placed (with computer's ships revealed)
+    print("\nAll the ships have been placed. Here is the board for the game to start:")
+    print_board(users_grid, reveal= False)  # Change reveal to True
 
-    if game_over:
-        print("Game Over")
+    # Start the game with users_grid and pc_ships
 
 if __name__ == "__main__":
     main()
+
+
+"""" # User attacks computer's ships
+users_grid, game_over = users_attack(users_grid, pc_ships)
+
+if game_over:
+        print("Game Over")"""
+
+
 
     
