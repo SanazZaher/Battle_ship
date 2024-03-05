@@ -36,7 +36,7 @@ def battleship_map():
 
 #step 2 : User places their ships on the grid
 
-def users_ships_positions(grid):
+def users_ships_positions(users_grid):
     """Allows the user to place their ships on the grid."""
     num_ships = 5     # limiting the number of ships to 5 
     ships = []   # list to store the ships
@@ -88,14 +88,14 @@ def users_ships_positions(grid):
 
         # checking to not overlap ships
         for position in positions:
-            if grid[position[0]][position[1]] == "X":
+            if users_grid[position[0]][position[1]] == "X":
                 print("Invalid position! This position is already occupied by another ship.")
                 return None 
             # Check ships cells for overlap, ships can't be placed next to each other 
             for i in range(-1, 2):
                 for j in range(-1, 2):
                     if (position[0] + i >= 0 and position[0] + i < 10) and (position[1] + j >= 0 and position[1] + j < 10):
-                        if grid[position[0] + i][position[1] + j] == "X":
+                        if users_grid[position[0] + i][position[1] + j] == "X":
                             print("Invalid position! Ships cannot be placed adjacent to each other.")
                             return None            
         # add ships to the list
@@ -103,15 +103,15 @@ def users_ships_positions(grid):
 
         # Mark the grid with the ship
         for position in positions:
-            grid[position[0]][position[1]] = "X"
+            users_grid[position[0]][position[1]] = "X"
 
         ships_placed += 1    # to stop the questions after 5 ships are placed on the grid
         if ships_placed == num_ships:
             break
         print("\nCurrent Board:")
-        print_board(grid)
+        print_board(users_grid)
 
-    return grid, ships
+    return users_grid, ships
 # step 3: compute places ships randomly 
 def computers_ships_positions(pc_grid, debug_mode = True):  
     """Places the computer's ships randomly on the separate grid and this wont be revealed to the user."""   # adding the debug mode for the pc ships to not display them on the board
@@ -182,7 +182,7 @@ def print_board(grid, reveal= True):
         print()
 
 # step 4
-def users_attack(users_grid, pc_ships):
+def users_attack(grid, pc_ships):
     """Allows the user to guess the computer's ship positions and remove them from the grid."""
     bullet_num = 10
 
@@ -300,13 +300,14 @@ def main():
     print_board(grid)
 
     # User places the ships
+    users_grid = battleship_map()
     print("User's Board:")
     print_board(grid, reveal= True)
     users_grid, users_ships = users_ships_positions(grid)
 
     # defining the pc's board
     pc_grid = battleship_map()
-    
+
     # Computer places the ships
     print("\ncomputers board:")
     users_grid, pc_ships = computers_ships_positions(pc_grid, debug_mode = True)
