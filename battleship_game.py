@@ -182,7 +182,7 @@ def print_board(grid, reveal= True):
 # step 4
 def users_attack(pc_grid, pc_ships):
     """Allows the user to guess the computer's ship positions and remove them from the grid."""
-    bullet_num = 10
+    bullet_num = 20
 
     for bullet in range(1, bullet_num + 1):  # Iterate over each bullet
         print(f"Let's attack! Where do you want to shoot your bullet {bullet} at? ")
@@ -249,7 +249,7 @@ def users_attack(pc_grid, pc_ships):
 # step 5
 def computers_attack(users_grid, users_ships):
     """Computer attacks the user's grid randomly and gives the updated board."""
-    bullet_num = 10
+    bullet_num = 20
 
     for bullet in range(1, bullet_num + 1):
         print(f"Computer's turn to attack (bullet {bullet}): ")
