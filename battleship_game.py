@@ -223,20 +223,23 @@ def users_attack(pc_grid, pc_ships):
                         print(f"You've sunk {ship['name']}!")
                         # Mark the ship as sunk on the grid
                         for position in ship["positions"]:
-                            pc_grid[position[0]][position[1]] = "#" if pc_grid[position[0]][position[1]] !="H" else "H" # Mark as sunk
-                        pc_ships.remove(ship)  # Remove the ship from the list
+                            pc_grid[position[0]][position[1]] = "#" # Mark as sunk
                         print_board(pc_grid)
+                        pc_ships.remove(ship)  # Remove the ship from the list
+                        
                         
                         # Check if all ships are sunk
                         if not pc_ships:
                             print("Congratulations! You've sunk all the computer's ships!")
                         break   
-            else:  # User missed
-                print("Miss! You hit the water.")
-                pc_grid[users_bullet_row][users_bullet_column] = "O"  # Mark as a miss on water
+            else:    # ship hit but not sunk 
+                print_board(pc_grid)
+        else:  # User missed and hit the water
+            print("Miss! You hit the water.")
+            pc_grid[users_bullet_row][users_bullet_column] = "O"  # Mark as a miss on water
                 
             
-        print_board(pc_grid)  # Print the updated grid after each shot
+    print_board(pc_grid)  # Print the updated grid after each shot
     
     # If all bullets are fired and all ships are not sunk, the game is over
     print("You've used all your bullets. Game over.")
