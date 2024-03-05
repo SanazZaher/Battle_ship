@@ -1,13 +1,11 @@
 """
 Grid representation:
  "." = Empty cell (Water)
- "o" = Miss (Shot fired at this location, but it's empty/water)
+ "O" = Miss (Shot fired at this location, but it's empty/water)
  "X" = User Ship
  "P" = Computer Ship
- "#" = users Ship is completely sunk
- "~" = pc ship is completely sunk
- "H" = Part of the users ship is hit
- "C" = part of the pc ship is hit 
+ "#" = Ship is completely sunk
+ "H" = Part of theship is hit
 """
 import random
 # making a dictionary to store the values of each letter
@@ -182,7 +180,7 @@ def print_board(grid, reveal= True):
         print()
 
 # step 4
-def users_attack(grid, pc_ships):
+def users_attack(pc_grid, pc_ships):
     """Allows the user to guess the computer's ship positions and remove them from the grid."""
     bullet_num = 10
 
@@ -210,16 +208,12 @@ def users_attack(grid, pc_ships):
                 print("Invalid column. Please choose a capital letter from A to J.")
 
         # Check the target of the shot
-        target = users_grid[users_bullet_row][users_bullet_column]
+        target = pc_grid[users_bullet_row][users_bullet_column]
 
-        if target == "X":  # User hit their own ship
-            print("You hit your own ship! That's a wasted shot.")
-            print_board(users_grid)
-
-        elif target == "P":  # User hit the computer's ship
+        if target == "P":  # User hit the computer's ship
             print("Hit! You hit part of a ship.")
-            users_grid[users_bullet_row][users_bullet_column] = "C"  # Mark as hit
-            print_board(users_grid)
+            pc_grid[users_bullet_row][users_bullet_column] = "C"  # Mark as hit
+            print_board(pc_grid)
 
             # Check if the ship is sunk
             for ship in pc_ships:
