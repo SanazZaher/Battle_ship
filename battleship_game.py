@@ -236,9 +236,10 @@ def users_attack(pc_grid, pc_ships):
                         break   
         else:  # User missed and hit the water
             print("Miss! You hit the water.")
-            pc_grid[users_bullet_row][users_bullet_column] = "O"  # Mark as a miss on water  
+            pc_grid[users_bullet_row][users_bullet_column] = "O"  # Mark as a miss on water 
+            print_board(pc_grid)  # Print the updated grid after each shot 
         bullet_used += 1   #increment the bulloet used      
-    print_board(pc_grid)  # Print the updated grid after each shot
+    
     
     # If all bullets are fired and all ships are not sunk, the game is over
     print("You've used all your bullets. Game over.")
