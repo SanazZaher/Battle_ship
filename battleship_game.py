@@ -183,9 +183,9 @@ def print_board(grid, reveal= True):
 def users_attack(pc_grid, pc_ships):
     """Allows the user to guess the computer's ship positions and remove them from the grid."""
     bullet_num = 20
-
+    bullet_used = 0   # for the condition game over when all the bullets are fired
     for bullet in range(1, bullet_num + 1):  # Iterate over each bullet
-        print(f"Let's attack! Where do you want to shoot your bullet {bullet} at? ")
+        print(f"\nLet's attack! Where do you want to shoot your bullet {bullet} at? ")
 
         # Get user input for row
         while True:
@@ -211,7 +211,7 @@ def users_attack(pc_grid, pc_ships):
         target = pc_grid[users_bullet_row][users_bullet_column]
 
         if target == "P":  # User hit the computer's ship
-            print("Hit! You hit part of a ship.")
+            print("\nHit! You hit part of a ship.")
             pc_grid[users_bullet_row][users_bullet_column] = "H"  # Mark as hit
             print_board(pc_grid)
 
@@ -226,19 +226,18 @@ def users_attack(pc_grid, pc_ships):
                             pc_grid[position[0]][position[1]] = "#" # Mark as sunk
                         print_board(pc_grid)
                         pc_ships.remove(ship)  # Remove the ship from the list
-                        
-                        
-                        # Check if all ships are sunk
-                        if not pc_ships:
+                        print("Remaining ships:", pc_ships)   # for debugging the sunk condition 
+                        print("All ships sunk?", all(ship["hits"] == ship["length"] for ship in pc_ships))
+
+                        # Check if all ships are sunk(If all the conditions are true, return true)
+                        if all(ship["hits"] == ship["length"] for ship in pc_ships):
                             print("Congratulations! You've sunk all the computer's ships!")
+                            return pc_grid, True   # game over
                         break   
-            else:    # ship hit but not sunk 
-                print_board(pc_grid)
         else:  # User missed and hit the water
             print("Miss! You hit the water.")
-            pc_grid[users_bullet_row][users_bullet_column] = "O"  # Mark as a miss on water
-                
-            
+            pc_grid[users_bullet_row][users_bullet_column] = "O"  # Mark as a miss on water  
+        bullet_used += 1   #increment the bulloet used      
     print_board(pc_grid)  # Print the updated grid after each shot
     
     # If all bullets are fired and all ships are not sunk, the game is over
@@ -250,7 +249,7 @@ def users_attack(pc_grid, pc_ships):
 def computers_attack(users_grid, users_ships):
     """Computer attacks the user's grid randomly and gives the updated board."""
     bullet_num = 20
-
+    bullet_used = 0 
     for bullet in range(1, bullet_num + 1):
         print(f"Computer's turn to attack (bullet {bullet}): ")
 
@@ -264,6 +263,8 @@ def computers_attack(users_grid, users_ships):
                 print("Hit! Computer hit part of your ship.")
                 users_grid[computers_bullet_row][computers_bullet_column] = "H"  # Mark as hit
                 print_board(users_grid)
+
+                # check if the ship is sunk
                 for ship in users_ships:
                     if (computers_bullet_row, computers_bullet_column) in ship["positions"]:
                         ship["hits"] += 1
@@ -272,33 +273,33 @@ def computers_attack(users_grid, users_ships):
 
                             # Mark the ship as sunk on the grid
                             for position in ship["positions"]:
-                                users_grid[position[0]][position[1]] = "#" if users_grid[position[0]][position[1]] != "H" else "H" # Mark as sunk
-                            users_ships.remove(ship)  # Remove the ship from the list
+                                users_grid[position[0]][position[1]] = "#"  # Mark as sunk
                             print_board(users_grid)
+                            users_ships.remove(ship)  # Remove the ship from the list
+                            
                             # Check if all user ships are sunk
-                            if not users_ships:
+                            if all(ship["hits"] == ship["length"] for ship in users_ships):
                                 print("Game Over. Computer sunk all your ships!")
+                                return users_grid, True  # Game over
                             break
-                else:  # Computer hit but ship not sunk
+                else:   # Computer hit but ship not sunk
                     break
 
-            else:  # Computer missed
+            else:  # Computer missed and hit the water
                 print("Miss! Computer hit the water.")
                 users_grid[computers_bullet_row][computers_bullet_column] = "O"  # Mark as a miss on water
-                print_board(users_grid)
-                break
-
+            break   # to the next bullet
+        bullet_used += 1    
+    print_board(users_grid)   # print updated grid after each shot
+                
+    # if all the bullets are finished game is over
     print("Computer's turn is over.")
-
+    return users_grid, False
 def main():
-    # Printing the initial grid
-    grid = battleship_map()
-    print("\nInitial Board:")
-    print_board(grid)
 
     # User places the ships
     users_grid = battleship_map()
-    print("User's Board:")
+    print("\nInitial Board:")
     print_board(users_grid, reveal= False)
     users_grid, users_ships = users_ships_positions(users_grid)
 
@@ -316,18 +317,24 @@ def main():
     # game loop
     user_turn = True
     while True:
+        # users trun
         if user_turn:
             print("\nIt's your turn to attack the computers ships.")
             print_board(pc_grid, reveal = True)
             pc_grid, game_over = users_attack(pc_grid, pc_ships)
+            if game_over:
+                print("Game over!")
+                break
         else:
+        # computers turn 
             print("\nIts computers turn to attack your ships!")
             print_board(users_grid)
             users_grid, game_over = computers_attack(users_grid, users_ships)
-        if game_over:
-            print("Game over!")
-            break
-        user_turn = not user_turn   # to take turns
+            if game_over:
+               print("Game over!")
+               break
+        user_turn = not user_turn    # to switch turns
 
+    
 if __name__ == "__main__":
     main()
