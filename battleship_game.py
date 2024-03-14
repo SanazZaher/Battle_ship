@@ -88,28 +88,31 @@ def users_ships_positions(users_grid):
         for position in positions:
             if users_grid[position[0]][position[1]] == "X":
                 print("Invalid position! This position is already occupied by another ship.")
-                return None 
+                # changing return None to break to try and place other ships
+                break 
             # Check ships cells for overlap, ships can't be placed next to each other 
             for i in range(-1, 2):
                 for j in range(-1, 2):
                     if (position[0] + i >= 0 and position[0] + i < 10) and (position[1] + j >= 0 and position[1] + j < 10):
                         if users_grid[position[0] + i][position[1] + j] == "X":
                             print("Invalid position! Ships cannot be placed adjacent to each other.")
-                            return None            
+                            # changing return None to break to attempt the ship placement again
+                            break           
         # add ships to the list
         ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
 
         # Mark the grid with the ship
         for position in positions:
             users_grid[position[0]][position[1]] = "X"
-
-        ships_placed += 1    # to stop the questions after 5 ships are placed on the grid
-        if ships_placed == num_ships:
-            break
         print("\nCurrent Board:")
         print_board(users_grid)
 
+        ships_placed += 1    # to stop the questions after 5 ships are placed on the grid
+        if ships_placed == num_ships:
+            print("All your ships have been placed.")
+            break
     return users_grid, ships
+
 # step 3: compute places ships randomly 
 def computers_ships_positions(pc_grid, debug_mode = True):  
     """Places the computer's ships randomly on the separate grid and this wont be revealed to the user."""   # adding the debug mode for the pc ships to not display them on the board
@@ -232,7 +235,10 @@ def users_attack(pc_grid, pc_ships):
                         # Check if all ships are sunk(If all the conditions are true, return true)
                         if all(ship["hits"] == ship["length"] for ship in pc_ships):
                             print("Congratulations! You've sunk all the computer's ships!")
-                            return pc_grid, True   # game over
+                            return pc_grid, True   # game over situation is if all the ships are sunk or if all the bullets are fired
+                        elif bullet_used == bullet_num:
+                            print("You've used all your bullets.Game over!")
+                            return pc_grid, False
                         break   
         else:  # User missed and hit the water
             print("Miss! You hit the water.")
@@ -289,7 +295,7 @@ def computers_attack(users_grid, users_ships):
             else:  # Computer missed and hit the water
                 print("Miss! Computer hit the water.")
                 users_grid[computers_bullet_row][computers_bullet_column] = "O"  # Mark as a miss on water
-            break   # to the next bullet
+            # break removed for the loop to continue
         bullet_used += 1    
     print_board(users_grid)   # print updated grid after each shot
                 
@@ -318,6 +324,8 @@ def main():
     # game loop
     user_turn = True
     while True:
+        # Debugging statement to track the current turn
+        print(f"\nCurrent turn: {'User' if user_turn else 'Computer'}")
         # users trun
         if user_turn:
             print("\nIt's your turn to attack the computers ships.")
