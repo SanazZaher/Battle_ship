@@ -122,7 +122,7 @@ def computers_ships_positions(pc_grid, debug_mode = True):
     pc_ships = []
     ship_info = [("Carrier", 5), ("Battleship", 4), ("Cruiser", 3), ("Submarine", 3), ("Destroyer", 2)]  # List of Cell lengths of the 5 ships and their names
 
-    for ship_name, length in ship_info:
+    for ship_name, length in ship_info:   # iterating over each ship to place them on the grid
         placed = False   # to check if the ship is placed successfully
         while not placed:
             row = random.randrange(0, 10)
@@ -267,7 +267,7 @@ def computers_attack(users_grid, users_ships):
             target = users_grid[computers_bullet_row][computers_bullet_column]
 
             if target == "X":  # Computer hit the user's ship
-                print("Hit! Computer hit part of your ship.")
+                print("\nHit! Computer hit part of your ship.")
                 users_grid[computers_bullet_row][computers_bullet_column] = "H"  # Mark as hit
                 print_board(users_grid)
 
@@ -287,18 +287,17 @@ def computers_attack(users_grid, users_ships):
                             # Check if all user ships are sunk
                             if all(ship["hits"] == ship["length"] for ship in users_ships):
                                 print("Game Over. Computer sunk all your ships!")
-                                return users_grid, True  # Game over
+                                return users_grid, True  # Game over situation for all the ships sunk and all the bullets are fired
+                            elif bullet_used == bullet_num:
+                                print("pc has fired all of their bullets. Game over!")
+                                return users_grid, False
                             break
-                else:   # Computer hit but ship not sunk
-                    break
-
             else:  # Computer missed and hit the water
                 print("Miss! Computer hit the water.")
                 users_grid[computers_bullet_row][computers_bullet_column] = "O"  # Mark as a miss on water
+                print_board(users_grid)   # print updated grid after each shot
             # break removed for the loop to continue
-        bullet_used += 1    
-    print_board(users_grid)   # print updated grid after each shot
-                
+            bullet_used += 1            
     # if all the bullets are finished game is over
     print("Computer's turn is over.")
     return users_grid, False
@@ -329,7 +328,7 @@ def main():
         # users trun
         if user_turn:
             print("\nIt's your turn to attack the computers ships.")
-            print_board(pc_grid, reveal = True)
+            print_board(pc_grid, reveal = True)    # reveal true to show all the cells including pc's ships
             pc_grid, game_over = users_attack(pc_grid, pc_ships)
             if game_over:
                 print("Game over!")
