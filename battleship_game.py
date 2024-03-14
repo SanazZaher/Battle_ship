@@ -296,8 +296,9 @@ def computers_attack(users_grid, users_ships):
                 print("Miss! Computer hit the water.")
                 users_grid[computers_bullet_row][computers_bullet_column] = "O"  # Mark as a miss on water
                 print_board(users_grid)   # print updated grid after each shot
+                break # to exite the loop after the miss
             # break removed for the loop to continue
-            bullet_used += 1            
+        bullet_used += 1            
     # if all the bullets are finished game is over
     print("Computer's turn is over.")
     return users_grid, False
