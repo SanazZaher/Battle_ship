@@ -84,33 +84,41 @@ def users_ships_positions(users_grid):
             except ValueError as e:
                 print(e)
 
-        # checking to not overlap ships
-        for position in positions:
-            if users_grid[position[0]][position[1]] == "X":
-                print("Invalid position! This position is already occupied by another ship.")
-                # changing return None to break to try and place other ships
-                break 
-            # Check ships cells for overlap, ships can't be placed next to each other 
-            for i in range(-1, 2):
-                for j in range(-1, 2):
-                    if (position[0] + i >= 0 and position[0] + i < 10) and (position[1] + j >= 0 and position[1] + j < 10):
-                        if users_grid[position[0] + i][position[1] + j] == "X":
-                            print("Invalid position! Ships cannot be placed adjacent to each other.")
-                            # changing return None to break to attempt the ship placement again
-                            break           
-        # add ships to the list
-        ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
+        # Check for overlap
+        overlap_detected = any(users_grid[position[0]][position[1]] == "X" for position in positions)
 
-        # Mark the grid with the ship
+        if overlap_detected:
+            print("You overlapped with another ship! Please choose a new placement for your ship.")
+            continue
+
+        # Check for adjacency
+        adjacency_detected = False
+        for position in positions:
+            row, col = position
+            for i in range(-1, length + 1):
+                for j in range(-1, 2):
+                    if 0 <= row + i < 10 and 0 <= col + j < 10:
+                        if users_grid[row + i][col + j] == "X":
+                            adjacency_detected = True
+                            break
+                if adjacency_detected:
+                    break
+            if adjacency_detected:
+                break
+
+        if adjacency_detected:
+            print("Invalid position! Ships cannot be placed adjacent to each other.")
+            print("Please choose a new placement for your ship.")
+            continue
+
+        # No overlap or adjacency, add the ship to the list and mark its positions on the grid
+        ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
         for position in positions:
             users_grid[position[0]][position[1]] = "X"
         print("\nCurrent Board:")
         print_board(users_grid)
 
-        ships_placed += 1    # to stop the questions after 5 ships are placed on the grid
-        if ships_placed == num_ships:
-            print("All your ships have been placed.")
-            break
+    print("All your ships have been placed.")
     return users_grid, ships
 
 # step 3: compute places ships randomly 
