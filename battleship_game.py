@@ -38,6 +38,7 @@ def users_ships_positions(users_grid):
     """Allows the user to place their ships on the grid."""
     num_ships = 5     # limiting the number of ships to 5 
     ships = []   # list to store the ships
+    occupied_positions = []   # a list to keep track of occupied positions to compare the positions for overlap
     ships_placed = 0 
     ship_info = [("Carrier", 5), ("Battleship", 4), ("Cruiser", 3), ("Submarine", 3), ("Destroyer", 2)]  # List of tupples with Cell lengths of the 5 ships and their names
 
@@ -83,14 +84,22 @@ def users_ships_positions(users_grid):
                     continue
             except ValueError as e:
                 print(e)
-
+        overlap = False
         # Check for overlap
-        overlap_detected = any(users_grid[position[0]][position[1]] == "X" for position in positions)
-
-        if overlap_detected:
-            print("You overlapped with another ship! Please choose a new placement for your ship.")
-            continue
-
+        for pos in positions:
+            if pos in occupied_positions:
+                overlap = True
+                break
+        if overlap:
+            print("You overlapped with another ship! Please choose a new placement for your ship.") 
+            continue   
+        occupied_positions.extend(positions)    # if overlap is False, add this position to the occupied positions
+        # If no overlap, proceed
+        ships.append((ship_name, positions))
+        ships_placed += 1
+        print(f"{ship_name} placed successfully.")
+        if ships_placed == num_ships:
+            break
         # Check for adjacency
         adjacency_detected = False
         for position in positions:
@@ -128,6 +137,7 @@ def computers_ships_positions(pc_grid, debug_mode = True):
     num_ships = 5    # Limiting the number of ships for the computer
     pc_ships_placed = 0 
     pc_ships = []
+    occupied_positions = []
     ship_info = [("Carrier", 5), ("Battleship", 4), ("Cruiser", 3), ("Submarine", 3), ("Destroyer", 2)]  # List of Cell lengths of the 5 ships and their names
 
     for ship_name, length in ship_info:   # iterating over each ship to place them on the grid
