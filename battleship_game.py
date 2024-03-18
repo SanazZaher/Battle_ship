@@ -92,7 +92,7 @@ def users_ships_positions(users_grid):
                 break
         if overlap:
             print("You overlapped with another ship! Please choose a new placement for your ship.") 
-            continue   
+            continue   # this doesnt take me to the ship replacement of the same ship! 
         occupied_positions.extend(positions)    # if overlap is False, add this position to the occupied positions
         # If no overlap, proceed
         ships.append((ship_name, positions))
@@ -158,26 +158,36 @@ def computers_ships_positions(pc_grid, debug_mode = True):
                     positions = [(row + i ,column) for i in range(length)]
                     placed = True   # pc can place the ship vertically
             if placed:
+                # Check for overlap with PC ships
+                pc_overlap = any(position in occupied_positions for position in positions)
                 # check for overlap with users ships, if any of this is true  
-                overlap = any(pc_grid[position[0]][position[1]] == "X" for position in positions)
-                if not overlap:   # if there is no overlap                 
+                user_overlap = any(pc_grid[position[0]][position[1]] == "X" for position in positions)
+                if not pc_overlap and not user_overlap:   # if there is no overlap                 
                     # add ships to the list
                     pc_ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
 
                     # then mark the grids with pc ships
                     for position in positions:
                         pc_grid[position[0]][position[1]] = "P"
+                        occupied_positions.append(position)
                     pc_ships_placed += 1
                 else:
                     placed = False 
 
                 # Check ships cells for overlap, ships can't be placed next to each other
-                for i in range(-1, 2):
+                adjacency_detected = False
+                for i in range(-1, length + 1):
                     for j in range(-1, 2):
                         if (position[0] + i >= 0 and position[0] + i < 10) and (position[1] + j >= 0 and position[1] + j < 10):
-                            if pc_grid[position[0] + i][position[1] + j] == "X":
-                                overlap = True
-                                break  
+                            if pc_grid[position[0] + i][position[1] + j] == "P":
+                                adjacency_detected = True
+                            break
+                if adjacency_detected:
+                    break
+            if adjacency_detected:
+                break
+        if adjacency_detected:
+            continue
     if debug_mode:
         print("\nComputer's ships:")
         print_board(pc_grid)  # Printing computer's ships for debugging
