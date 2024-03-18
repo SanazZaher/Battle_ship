@@ -36,11 +36,11 @@ def battleship_map():
 
 def users_ships_positions(users_grid):
     """Allows the user to place their ships on the grid."""
-    num_ships = 5     # limiting the number of ships to 5 
+    num_ships = 3     # limiting the number of ships to 3 
     ships = []   # list to store the ships
     occupied_positions = []   # a list to keep track of occupied positions to compare the positions for overlap
     ships_placed = 0 
-    ship_info = [("Carrier", 5), ("Battleship", 4), ("Cruiser", 3), ("Submarine", 3), ("Destroyer", 2)]  # List of tupples with Cell lengths of the 5 ships and their names
+    ship_info = [ ("Battleship", 4), ("Cruiser", 3), ("Destroyer", 2)]  # List of tupples with Cell lengths of the 5 ships and their names
 
     for ship_name, length in ship_info: # tupple unpacking
         print(f"Where do you want {ship_name} (length:{length})?")
@@ -104,7 +104,7 @@ def users_ships_positions(users_grid):
         adjacency_detected = False
         for position in positions:
             row, col = position
-            for i in range(-1, length + 1):
+            for i in range(-1, length + 1):   #the length of ship + the space on both ends
                 for j in range(-1, 2):
                     if 0 <= row + i < 10 and 0 <= col + j < 10:
                         if users_grid[row + i][col + j] == "X":
@@ -134,11 +134,11 @@ def users_ships_positions(users_grid):
 def computers_ships_positions(pc_grid, debug_mode = True):  
     """Places the computer's ships randomly on the separate grid and this wont be revealed to the user."""   # adding the debug mode for the pc ships to not display them on the board
 
-    num_ships = 5    # Limiting the number of ships for the computer
+    num_ships = 3    # Limiting the number of ships for the computer
     pc_ships_placed = 0 
     pc_ships = []
     occupied_positions = []
-    ship_info = [("Carrier", 5), ("Battleship", 4), ("Cruiser", 3), ("Submarine", 3), ("Destroyer", 2)]  # List of Cell lengths of the 5 ships and their names
+    ship_info = [("Battleship", 4), ("Cruiser", 3), ("Destroyer", 2)]  # List of Cell lengths of the 3 ships and their names
 
     for ship_name, length in ship_info:   # iterating over each ship to place them on the grid
         placed = False   # to check if the ship is placed successfully
