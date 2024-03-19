@@ -72,107 +72,66 @@ def users_ships_positions(users_grid):
     ships = []   # list to store the ships
     occupied_positions = []   # a list to keep track of occupied positions to compare the positions for overlap
     ships_placed = 0 
-    ship_info = [ ("Battleship", 4), ("Cruiser", 3), ("Destroyer", 2)]  # List of tupples with Cell lengths of the 5 ships and their names
+    ship_info = [ ("Battleship", 4), ("Cruiser", 3), ("Destroyer", 2)]  # List of tuples with Cell lengths of the 5 ships and their names
     
-    for ship_name, length in ship_info: # tupple unpacking
+    for ship_name, length in ship_info: # tuple unpacking
         print(f"Where do you want {ship_name} (length:{length})?")
         
-        # Row
         while True:
-            try:    # checking input error
-                row = int(input("Choose a number from 0-9 for the row position of your ship:"))
-                if 0 <= row <= 9:     # checking if the user entered a valid number for row 
-                    break
-                else:
-                    print("Invalid row. Please choose a number from 0 to 9 for the row.")
-            except ValueError:
-                print("Invalid input, enter a valid row number")
-        # column
-        while True:
-            user_column = input("Choose a letter from A-J for the column position of your ship:").upper()
-
-            if user_column in column_letters:     # getting the key value of each letter from dictionary and checking if its valid 
-                column = column_letters[user_column]
-                break
-            else:
-                print("Invalid column. Please choose a capital letter from A to J.")
-
-        # orientation
-        while True:       
             try:
-                users_ships_orientation = input("Choose orientation (H for horizontal, V for vertical): ").upper()
-                if users_ships_orientation == "H":
-                    if column + length > 10:
-                        raise ValueError("Invalid ship placement. Ship goes out of grid.")
-                    positions = [(row,column + i ) for i in range (length)]   # making a list of positions
-                    break
-                elif users_ships_orientation == "V":
-                    if row + length > 10:
-                        raise ValueError("Invalid ship placement. Ship goes out of grid.")
-                    positions = [(row + i, column) for i in range(length)]
-                    break
-                else:
-                    print("Invalid orientation. Please choose H for horizontal or V for vertical.")
-                    continue
+                # Row
+                while True:
+                    row = int(input("Choose a number from 0-9 for the row position of your ship:"))
+                    if 0 <= row <= 9:     # checking if the user entered a valid number for row 
+                        break
+                    else:
+                        print("Invalid row. Please choose a number from 0 to 9 for the row.")
+
+                while True:
+                    # column
+                    user_column = input("Choose a letter from A-J for the column position of your ship:").upper()
+                    if user_column in column_letters:     # getting the key value of each letter from dictionary and checking if it's valid 
+                        column = column_letters[user_column]
+                        break
+                    else:
+                        print("Invalid column. Please choose a capital letter from A to J.")
+
+                while True:
+                    # orientation
+                    users_ships_orientation = input("Choose orientation (H for horizontal, V for vertical): ").upper()
+                    if users_ships_orientation == "H":
+                        if column + length > 10:
+                            raise ValueError("Invalid ship placement. Ship goes out of grid.")
+                        positions = [(row, column + i) for i in range(length)]   # making a list of positions
+                    elif users_ships_orientation == "V":
+                        if row + length > 10:
+                            raise ValueError("Invalid ship placement. Ship goes out of grid.")
+                        positions = [(row + i, column) for i in range(length)]
+                    else:
+                        print("Invalid orientation. Please choose H for horizontal or V for vertical.")
+                        continue
+
+                    if check_overlap(users_grid, positions):
+                        raise ValueError("Invalid ship placement. Overlaps with existing ship.")
+                    if check_adjacency(users_grid, positions):
+                        raise ValueError("Invalid ship placement. Adjacent to existing ship.")
+                    
+                    # No overlap or adjacency, add the ship to the list and mark its positions on the grid
+                    ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
+                    for position in positions:
+                        users_grid[position[0]][position[1]] = "X"
+                    print("\nCurrent Board:")
+                    print_board(users_grid)
+                    break  # Exit the loop if ship placement is successful
+
+                break  # Exit the loop if ship placement is successful
+
             except ValueError as e:
                 print(e)
-        while True:
-            overlap = False
-            # Check for overlap
-            for pos in positions:    # checking the position of each ship
-                if pos in occupied_positions:   # if this position has already been taken
-                    overlap = True
-                    break
-            if overlap:
-                print("You overlapped with another ship! Please choose a new placement for your ship.") 
-                continue   # this doesnt take me to the ship replacement of the same ship! 
-            occupied_positions.extend(positions)    # if overlap is False, add this position to the occupied positions
-            # If no overlap, proceed
-            ships.append((ship_name, positions))
-            ships_placed += 1
-            print(f"{ship_name} placed successfully.")
-            if ships_placed == num_ships:
-                break
-
-        # Check for adjacency
-        adjacency_detected = False
-        ship_restart = False 
-        for position in positions:
-            row, col = position
-            for i in range(-1, length + 1):   #the length of ship + the space on both ends
-                for j in range(-1, 2):
-                    if 0 <= row + i < 10 and 0 <= col + j < 10:    # if they are in the bounds
-                        if users_grid[row + i][col + j] == "X":
-                            adjacency_detected = True
-                            break
-                if adjacency_detected:
-                    break
-            if adjacency_detected:
-                break
-
-        if adjacency_detected:
-            print("Invalid position! Ships cannot be placed adjacent to each other.")
-            print("Please choose a new placement for your ship.")
-            ship_restart = True
-        # if the adjacency is True, then replace the same ship
-        while ship_restart :
-            ship_restart = False
-            # If adjacency is detected again during retry
-            if adjacency_detected:
-                print("Invalid position! Ships cannot be placed adjacent to each other.")
-                print("Please choose a new placement for your ship.")
-                ship_restart = True  # Set flag to indicate ship placement should be restarted
-
-        # No overlap or adjacency, add the ship to the list and mark its positions on the grid
-        ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
-        for position in positions:
-            users_grid[position[0]][position[1]] = "X"
-        print("\nCurrent Board:")
-        print_board(users_grid)
+                print("Please choose a different position.")
 
     print("All your ships have been placed.")
     return users_grid, ships
-
 # step 3: compute places ships randomly 
 def computers_ships_positions(pc_grid, debug_mode = True):  
     """Places the computer's ships randomly on the separate grid and this wont be revealed to the user."""   # adding the debug mode for the pc ships to not display them on the board
