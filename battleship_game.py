@@ -32,6 +32,22 @@ def battleship_map():
         grid.append(row)
     return grid
 
+def print_board(grid, reveal= True):
+    """Prints the board with row numbers, column letters, and ships marked with 'X'."""
+    print(" ", end=" ")    # Printing the column letters
+    for letter in column_letters.keys():  
+        print(letter, end=" ")
+    print()
+
+    for i in range(len(grid)):    # Printing each row with numbers
+        print(i, end=" ")  
+        for j in range(len(grid[i])):
+            if not reveal and grid[i][j] == "P":  # If not reveal mode and grid cell has a PC ship, print "." instead
+                print(".", end=" ")
+            else:
+                print(grid[i][j], end=" ")
+        print()
+
 #step 2 : User places their ships on the grid
 
 def users_ships_positions(users_grid):
@@ -41,7 +57,7 @@ def users_ships_positions(users_grid):
     occupied_positions = []   # a list to keep track of occupied positions to compare the positions for overlap
     ships_placed = 0 
     ship_info = [ ("Battleship", 4), ("Cruiser", 3), ("Destroyer", 2)]  # List of tupples with Cell lengths of the 5 ships and their names
-
+    
     for ship_name, length in ship_info: # tupple unpacking
         print(f"Where do you want {ship_name} (length:{length})?")
         
@@ -84,29 +100,32 @@ def users_ships_positions(users_grid):
                     continue
             except ValueError as e:
                 print(e)
-        overlap = False
-        # Check for overlap
-        for pos in positions:
-            if pos in occupied_positions:
-                overlap = True
+        while True:
+            overlap = False
+            # Check for overlap
+            for pos in positions:    # checking the position of each ship
+                if pos in occupied_positions:   # if this position has already been taken
+                    overlap = True
+                    break
+            if overlap:
+                print("You overlapped with another ship! Please choose a new placement for your ship.") 
+                continue   # this doesnt take me to the ship replacement of the same ship! 
+            occupied_positions.extend(positions)    # if overlap is False, add this position to the occupied positions
+            # If no overlap, proceed
+            ships.append((ship_name, positions))
+            ships_placed += 1
+            print(f"{ship_name} placed successfully.")
+            if ships_placed == num_ships:
                 break
-        if overlap:
-            print("You overlapped with another ship! Please choose a new placement for your ship.") 
-            continue   # this doesnt take me to the ship replacement of the same ship! 
-        occupied_positions.extend(positions)    # if overlap is False, add this position to the occupied positions
-        # If no overlap, proceed
-        ships.append((ship_name, positions))
-        ships_placed += 1
-        print(f"{ship_name} placed successfully.")
-        if ships_placed == num_ships:
-            break
+
         # Check for adjacency
         adjacency_detected = False
+        ship_restart = False 
         for position in positions:
             row, col = position
             for i in range(-1, length + 1):   #the length of ship + the space on both ends
                 for j in range(-1, 2):
-                    if 0 <= row + i < 10 and 0 <= col + j < 10:
+                    if 0 <= row + i < 10 and 0 <= col + j < 10:    # if they are in the bounds
                         if users_grid[row + i][col + j] == "X":
                             adjacency_detected = True
                             break
@@ -118,7 +137,15 @@ def users_ships_positions(users_grid):
         if adjacency_detected:
             print("Invalid position! Ships cannot be placed adjacent to each other.")
             print("Please choose a new placement for your ship.")
-            continue
+            ship_restart = True
+        # if the adjacency is True, then replace the same ship
+        while ship_restart :
+            ship_restart = False
+            # If adjacency is detected again during retry
+            if adjacency_detected:
+                print("Invalid position! Ships cannot be placed adjacent to each other.")
+                print("Please choose a new placement for your ship.")
+                ship_restart = True  # Set flag to indicate ship placement should be restarted
 
         # No overlap or adjacency, add the ship to the list and mark its positions on the grid
         ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
@@ -194,21 +221,6 @@ def computers_ships_positions(pc_grid, debug_mode = True):
 
     return pc_grid, pc_ships
 
-def print_board(grid, reveal= True):
-    """Prints the board with row numbers, column letters, and ships marked with 'X'."""
-    print(" ", end=" ")    # Printing the column letters
-    for letter in column_letters.keys():  
-        print(letter, end=" ")
-    print()
-
-    for i in range(len(grid)):    # Printing each row with numbers
-        print(i, end=" ")  
-        for j in range(len(grid[i])):
-            if not reveal and grid[i][j] == "P":  # If not reveal mode and grid cell has a PC ship, print "." instead
-                print(".", end=" ")
-            else:
-                print(grid[i][j], end=" ")
-        print()
 
 # step 4
 def users_attack(pc_grid, pc_ships):
