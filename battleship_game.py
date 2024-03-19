@@ -192,11 +192,11 @@ def users_attack(pc_grid, pc_ships):
     """Allows the user to guess the computer's ship positions and remove them from the grid."""
     bullet_num = 20
     bullet_used = 0   # for the condition game over when all the bullets are fired
-    for bullet in range(1, bullet_num + 1):  # Iterate over each bullet
-        print(f"\nLet's attack! Where do you want to shoot your bullet {bullet} at? ")
+    while bullet_used < bullet_num:
+        print(f"\nLet's attack! Where do you want to shoot your bullet {bullet_used + 1} at? ")
 
         # Get user input for row
-        while True:
+        while True:   # to control the number of bullets fired by the user
             try:
                 users_bullet_row = int(input("Choose a number from 0-9 for the row position of your shot: "))
                 if 0 <= users_bullet_row <= 9:
@@ -238,24 +238,19 @@ def users_attack(pc_grid, pc_ships):
                         print("All ships sunk?", all(ship["hits"] == ship["length"] for ship in pc_ships))
 
                         # Check if all ships are sunk(If all the conditions are true, return true)
-                        if all(ship["hits"] == ship["length"] for ship in pc_ships):
+                        if not pc_ships:
                             print("Congratulations! You've sunk all the computer's ships!")
                             return pc_grid, True   # game over situation is if all the ships are sunk or if all the bullets are fired
-                        elif bullet_used == bullet_num:
-                            print("You've used all your bullets.Game over!")
-                            return pc_grid, False
                         break   
         else:  # User missed and hit the water
-            print("Miss! You hit the water.")
+            print("\nMiss! You hit the water.")
             pc_grid[users_bullet_row][users_bullet_column] = "O"  # Mark as a miss on water 
             print_board(pc_grid)  # Print the updated grid after each shot 
-        bullet_used += 1   #increment the bulloet used      
-    
+        bullet_used += 1   #increment the bullet used      
     
     # If all bullets are fired and all ships are not sunk, the game is over
     print("You've used all your bullets. Game over.")
     return pc_grid, False
-
 
 # step 5
 def computers_attack(users_grid, users_ships):
@@ -307,48 +302,54 @@ def computers_attack(users_grid, users_ships):
     # if all the bullets are finished game is over
     print("Computer's turn is over.")
     return users_grid, False
+# Define the function to determine the current turn
+def get_current_turn(turn_count):
+    return turn_count % 2 == 0  # Even turns correspond to the user's turn, odd turns correspond to the computer's turn
+
 def main():
+    turn_count = 0  # Initialize turn count
 
     # User places the ships
     users_grid = battleship_map()
     print("\nInitial Board:")
-    print_board(users_grid, reveal= False)
+    print_board(users_grid, reveal=False)
     users_grid, users_ships = users_ships_positions(users_grid)
 
     # defining the pc's board
     pc_grid = battleship_map()
 
     # Computer places the ships
-    """print("\ncomputers board:")"""
-    pc_grid, pc_ships = computers_ships_positions(pc_grid,users_grid, debug_mode = True)
+    pc_grid, pc_ships = computers_ships_positions(pc_grid, users_grid, debug_mode=True)
 
     # Displaying the board with all ships placed (with computer's ships revealed)
     print("\nAll the ships have been placed. Here is the board for the game to start:")
-    """print_board(pc_grid, reveal= False)"""
 
     # game loop
-    user_turn = True
-    while True:
-        # Debugging statement to track the current turn
-        print(f"\nCurrent turn: {'User' if user_turn else 'Computer'}")
-        # users trun
-        if user_turn:
-            print("\nIt's your turn to attack the computers ships.")
-            print_board(pc_grid, reveal = True)    # reveal true to show all the cells including pc's ships
-            pc_grid, game_over = users_attack(pc_grid, pc_ships)
-            if game_over:
-                print("Game over!")
-                break
-        else:
-        # computers turn 
-            print("\nIts computers turn to attack your ships!")
-            print_board(users_grid)
-            users_grid, game_over = computers_attack(users_grid, users_ships)
-            if game_over:
-               print("Game over!")
-               break
-        user_turn = not user_turn    # to switch turns
+    game_over = False
+    while not game_over:
+        # Increment turn count
+        turn_count += 1
 
-    
+        # Debugging statement to track the current turn
+        print(f"\nCurrent turn: {'User' if get_current_turn(turn_count) else 'Computer'}")
+
+        # User's turn
+        if get_current_turn(turn_count):
+            print("\nIt's your turn to attack the computer's ships.")
+            print_board(pc_grid, reveal=True)  # reveal true to show all the cells including pc's ships
+            pc_grid, user_game_over = users_attack(pc_grid, pc_ships)
+            if user_game_over:
+                game_over = True
+
+        # Computer's turn
+        else:
+            print("\nIt's the computer's turn to attack your ships!")
+            print_board(users_grid)
+            users_grid, pc_game_over = computers_attack(users_grid, users_ships)
+            if pc_game_over:
+                game_over = True
+
+    print("Game Ended!")
+
 if __name__ == "__main__":
     main()
