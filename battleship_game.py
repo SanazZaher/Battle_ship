@@ -132,9 +132,11 @@ def users_ships_positions(users_grid):
 
     print("All your ships have been placed.")
     return users_grid, ships
-# step 3: compute places ships randomly 
-def computers_ships_positions(pc_grid, debug_mode = True):  
-    """Places the computer's ships randomly on the separate grid and this wont be revealed to the user."""   # adding the debug mode for the pc ships to not display them on the board
+
+
+def computers_ships_positions(pc_grid, users_grid, debug_mode=True):  
+    """Places the computer's ships randomly on the separate grid and this won't be revealed to the user."""   
+    # Adding the debug mode for the PC ships to not display them on the board
 
     num_ships = 3    # Limiting the number of ships for the computer
     pc_ships_placed = 0 
@@ -143,60 +145,48 @@ def computers_ships_positions(pc_grid, debug_mode = True):
     ship_info = [("Battleship", 4), ("Cruiser", 3), ("Destroyer", 2)]  # List of Cell lengths of the 3 ships and their names
 
     for ship_name, length in ship_info:   # iterating over each ship to place them on the grid
-        placed = False   # to check if the ship is placed successfully
-        while not placed:
-            row = random.randrange(0, 10)
-            column = random.randrange(0, 10)
-            pc_ships_orientation = random.choice(["H", "V"])    # random choice for orientation
-        
-            # situation Horizontal
-            if pc_ships_orientation == "H":
-                if column + length <= 10:    # not to place it out of the grid 
-                    positions = [(row,column + i) for i in range(length)]
-                    placed = True   # pc places the ship horizontally 
-            # situation vertical
-            elif pc_ships_orientation == "V":
-                if row + length <= 10:
-                    positions = [(row + i ,column) for i in range(length)]
-                    placed = True   # pc can place the ship vertically
-            if placed:
-                # Check for overlap with PC ships
-                pc_overlap = any(position in occupied_positions for position in positions)
-                # check for overlap with users ships, if any of this is true  
-                user_overlap = any(pc_grid[position[0]][position[1]] == "X" for position in positions)
-                if not pc_overlap and not user_overlap:   # if there is no overlap                 
-                    # add ships to the list
-                    pc_ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
+        ship_placed = False   # to check if the ship is placed successfully
+        while not ship_placed:
+            try:
+                # Row
+                while True:
+                    row = random.randrange(0, 10)
+                    if 0 <= row <= 9:
+                        break
+                # Column
+                while True:
+                    column = random.randrange(0, 10)
+                    if 0 <= column <= 9:
+                        break
 
-                    # then mark the grids with pc ships
-                    for position in positions:
-                        pc_grid[position[0]][position[1]] = "P"
-                        occupied_positions.append(position)
-                    pc_ships_placed += 1
+                # Orientation
+                pc_ships_orientation = random.choice(["H", "V"])    # random choice for orientation
+                
+                if pc_ships_orientation == "H":
+                    if column + length <= 10:    # not to place it out of the grid 
+                        positions = [(row, column + i) for i in range(length)]
+                elif pc_ships_orientation == "V":
+                    if row + length <= 10:
+                        positions = [(row + i, column) for i in range(length)]
                 else:
-                    placed = False 
+                    raise ValueError("Invalid orientation.")
 
-                # Check ships cells for overlap, ships can't be placed next to each other
-                adjacency_detected = False
-                for i in range(-1, length + 1):
-                    for j in range(-1, 2):
-                        if (position[0] + i >= 0 and position[0] + i < 10) and (position[1] + j >= 0 and position[1] + j < 10):
-                            if pc_grid[position[0] + i][position[1] + j] == "P":
-                                adjacency_detected = True
-                            break
-                if adjacency_detected:
-                    break
-            if adjacency_detected:
-                break
-        if adjacency_detected:
-            continue
-    if debug_mode:
-        print("\nComputer's ships:")
-        print_board(pc_grid)  # Printing computer's ships for debugging
+                if check_overlap(pc_grid, positions) or check_overlap(users_grid, positions):
+                    continue  # Overlap detected, prompt PC to choose a different position
+                if check_adjacency(pc_grid, positions) or check_adjacency(users_grid, positions):
+                    continue  # Adjacent to existing ship, prompt PC to choose a different position
+                
+                # No overlap or adjacency, add the ship to the list and mark its positions on the grid
+                pc_ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
+                for position in positions:
+                    pc_grid[position[0]][position[1]] = "P"
+                ship_placed = True   # Ship placed successfully
+            except ValueError:
+                continue  # Continue to prompt PC to choose a different position
+
+        pc_ships_placed += 1
 
     return pc_grid, pc_ships
-
-
 # step 4
 def users_attack(pc_grid, pc_ships):
     """Allows the user to guess the computer's ship positions and remove them from the grid."""
@@ -330,7 +320,7 @@ def main():
 
     # Computer places the ships
     """print("\ncomputers board:")"""
-    pc_grid, pc_ships = computers_ships_positions(pc_grid, debug_mode = True)
+    pc_grid, pc_ships = computers_ships_positions(pc_grid,users_grid, debug_mode = True)
 
     # Displaying the board with all ships placed (with computer's ships revealed)
     print("\nAll the ships have been placed. Here is the board for the game to start:")
