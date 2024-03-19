@@ -48,7 +48,23 @@ def print_board(grid, reveal= True):
                 print(grid[i][j], end=" ")
         print()
 
-#step 2 : User places their ships on the grid
+#step 2 : functions for overlap and adjacency to use for both users ship placement and the pc ship placement
+def check_overlap(grid, positions):
+    """Check for overlap with existing ships."""
+    for row, col in positions:
+        if grid[row][col] != ".":
+            return True
+    return False
+
+def check_adjacency(grid, positions):
+    """Check for adjacency with existing ships."""
+    for row, col in positions:
+        for dr in [-1, 0, 1]:
+            for dc in [-1, 0, 1]:
+                nr, nc = row + dr, col + dc
+                if 0 <= nr < 10 and 0 <= nc < 10 and grid[nr][nc] != ".":
+                    return True
+    return False
 
 def users_ships_positions(users_grid):
     """Allows the user to place their ships on the grid."""
