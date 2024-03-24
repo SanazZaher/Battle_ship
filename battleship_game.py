@@ -307,13 +307,13 @@ def get_current_turn(turn_count):
     return turn_count % 2 == 0  # Even turns correspond to the user's turn, odd turns correspond to the computer's turn
 
 def main():
-    turn_count = 0  # Initialize turn count
+    turn_count = 1  # Initialize turn count
 
     # User places the ships
     users_grid = battleship_map()
     print("\nInitial Board:")
     print_board(users_grid, reveal=False)
-    users_grid, users_ships = users_ships_positions(users_grid)
+    users_grid, users_ships = users_ships_positions(users_grid)   # allow the user to print thei ships on the grid
 
     # defining the pc's board
     pc_grid = battleship_map()
@@ -326,7 +326,7 @@ def main():
 
     # game loop
     game_over = False
-    while not game_over:
+    while True:   # start the loop until the game is over
         # Increment turn count
         turn_count += 1
 
@@ -334,20 +334,27 @@ def main():
         print(f"\nCurrent turn: {'User' if get_current_turn(turn_count) else 'Computer'}")
 
         # User's turn
-        if get_current_turn(turn_count):
+        if turn_count % 2 == 0:
             print("\nIt's your turn to attack the computer's ships.")
             print_board(pc_grid, reveal=True)  # reveal true to show all the cells including pc's ships
             pc_grid, user_game_over = users_attack(pc_grid, pc_ships)
-            if user_game_over:
-                game_over = True
+            turn_count += 1
+            if game_over:
+                print("You lost, game over!")
+                break
 
-        # Computer's turn
+        # Computer's turn (when turn_count is odd)
         else:
             print("\nIt's the computer's turn to attack your ships!")
             print_board(users_grid)
             users_grid, pc_game_over = computers_attack(users_grid, users_ships)
+            turn_count += 1
             if pc_game_over:
-                game_over = True
+                print("Computer lost!")
+                break
+
+        # Increment turn count
+        turn_count += 1
 
     print("Game Ended!")
 
