@@ -8,6 +8,7 @@ Grid representation:
  "H" = Part of theship is hit
 """
 import random
+
 # making a dictionary to store the values of each letter
 column_letters = {
     "A": 0,
@@ -23,7 +24,7 @@ column_letters = {
 }  
 user_bullet_used = 0   
 pc_bullet_used = 0
-# step 1: Grid
+
 def battleship_map():
     """Generates a 10x10 grid for the battleship game."""
     grid = []
@@ -44,13 +45,12 @@ def print_board(grid, reveal= True):
     for i in range(len(grid)):    # Printing each row with numbers
         print(i, end=" ")  
         for j in range(len(grid[i])):
-            if not reveal and grid[i][j] == "P":  # If not reveal mode and grid cell has a PC ship, print "." instead
+            if not reveal and grid[i][j] == "P":  # If not reveal mode and grid cell has a PC ship, print "." instead, meaning hide the computes ships.
                 print(".", end=" ")
             else:
                 print(grid[i][j], end=" ")
         print()
 
-#step 2 : functions for overlap and adjacency to use for both users ship placement and the pc ship placement
 def check_overlap(grid, positions):
     """Check for overlap with existing ships."""
     for row, col in positions:
@@ -70,15 +70,11 @@ def check_adjacency(grid, positions):
 
 def users_ships_positions(users_grid):
     """Allows the user to place their ships on the grid."""
-    num_ships = 3     # limiting the number of ships to 3 
     ships = []   # list to store the ships
-    occupied_positions = []   # a list to keep track of occupied positions to compare the positions for overlap
-    ships_placed = 0 
     ship_info = [ ("Battleship", 4), ("Cruiser", 3), ("Destroyer", 2)]  # List of tuples with Cell lengths of the 5 ships and their names
     
     for ship_name, length in ship_info: # tuple unpacking
         print(f"Where do you want {ship_name} (length:{length})?")
-        
         while True:
             try:
                 # Row
@@ -131,25 +127,20 @@ def users_ships_positions(users_grid):
             except ValueError as e:
                 print(e)
                 print("Please choose a different position.")
-
-    print("All your ships have been placed.")
     return users_grid, ships
 
-
-def computers_ships_positions(pc_grid, users_grid, debug_mode=True):  
+def computers_ships_positions(pc_grid, users_grid, debug_mode = False):  
     """Places the computer's ships randomly on the separate grid and this won't be revealed to the user."""   
     # Adding the debug mode for the PC ships to not display them on the board
-
-    num_ships = 3    # Limiting the number of ships for the computer
-    pc_ships_placed = 0 
+    pc_ships_placed = 0    # to track the number of ships placed
     pc_ships = []
-    occupied_positions = []
     ship_info = [("Battleship", 4), ("Cruiser", 3), ("Destroyer", 2)]  # List of Cell lengths of the 3 ships and their names
 
     for ship_name, length in ship_info:   # iterating over each ship to place them on the grid
         ship_placed = False   # to check if the ship is placed successfully
         while not ship_placed:
             try:
+                positions = []
                 # Row
                 while True:
                     row = random.randrange(0, 10)
@@ -319,14 +310,14 @@ def main():
     # User places the ships
     users_grid = battleship_map()
     print("\nInitial Board:")
-    print_board(users_grid, reveal=False)
+    print_board(users_grid, reveal = False)
     users_grid, users_ships = users_ships_positions(users_grid)   # allow the user to print thei ships on the grid
 
     # defining the pc's board
     pc_grid = battleship_map()
 
     # Computer places the ships
-    pc_grid, pc_ships = computers_ships_positions(pc_grid, users_grid, debug_mode=True)
+    pc_grid, pc_ships = computers_ships_positions(pc_grid, users_grid, debug_mode= False)   # passing the reveal argument as false to hide pc's ships
 
     # Displaying the board with all ships placed (with computer's ships revealed)
     print("\nAll the ships have been placed. Here is the board for the game to start:")
@@ -341,7 +332,7 @@ def main():
         # User's turn
         if turn_count % 2 == 0:
             print("\nIt's your turn to attack the computer's ships.")
-            print_board(pc_grid, reveal=True)  # reveal true to show all the cells including pc's ships
+            print_board(pc_grid, reveal= False)  # reveal true to show all the cells including pc's ships
             pc_grid, game_over = users_attack(pc_grid, pc_ships, turn_count)
             turn_count += 1
             if game_over:
