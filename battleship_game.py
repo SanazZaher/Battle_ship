@@ -38,7 +38,7 @@ def battleship_map():
         grid.append(row)
     return grid
 
-def print_board(grid, reveal= True):
+def print_board(grid, reveal= False):
     """Prints the board with row numbers, column letters, and ships marked with 'X'."""
     print(" ", end=" ")    # Printing the column letters
     for letter in column_letters.keys():  
@@ -226,7 +226,7 @@ def users_attack(pc_grid, pc_ships, turn_count):
         if target == "P":  # User hit the computer's ship
             print("\nHit! You hit part of a ship.")
             pc_grid[users_bullet_row][users_bullet_column] = "H"  # Mark as hit
-            print_board(pc_grid, reveal = True)
+            print_board(pc_grid, reveal = False)
 
             # Check if the ship is sunk
             for ship in pc_ships:
@@ -237,11 +237,8 @@ def users_attack(pc_grid, pc_ships, turn_count):
                         # Mark the ship as sunk on the grid
                         for position in ship["positions"]:
                             pc_grid[position[0]][position[1]] = "#" # Mark as sunk
-                        print_board(pc_grid, reveal= True)
+                        print_board(pc_grid, reveal= False)
                         pc_ships.remove(ship)  # Remove the ship from the list
-                        print("Remaining ships:", pc_ships)   # for debugging the sunk condition 
-                        print("All ships sunk?", all(ship["hits"] == ship["length"] for ship in pc_ships))
-
                         # Check if all ships are sunk(If all the conditions are true, return true)
                         if not pc_ships:
                             print("Congratulations! You've sunk all the computer's ships!")
@@ -250,7 +247,7 @@ def users_attack(pc_grid, pc_ships, turn_count):
         else:  # User missed and hit the water
             print("\nMiss! You hit the water.")
             pc_grid[users_bullet_row][users_bullet_column] = "O"  # Mark as a miss on water 
-            print_board(pc_grid, reveal = True)  # Print the updated grid after each shot 
+            print_board(pc_grid, reveal = False)  # Print the updated grid after each shot 
         user_bullet_used += 1   #increment the bullet used      
         turn_count +=1   # increment the turn count after this bullet
     if bullet_num == user_bullet_used:
@@ -317,14 +314,14 @@ def main():
     # User places the ships
     users_grid = battleship_map()
     print("\nInitial Board:")
-    print_board(users_grid, reveal = True)
+    print_board(users_grid, reveal = False)
     users_grid, users_ships = users_ships_positions(users_grid)   # allow the user to print thei ships on the grid
 
     # defining the pc's board
     pc_grid = battleship_map()
 
     # Computer places the ships
-    pc_grid, pc_ships = computers_ships_positions(pc_grid, debug_mode= True)   # passing the reveal argument as false to hide pc's ships
+    pc_grid, pc_ships = computers_ships_positions(pc_grid, debug_mode= False)   # passing the reveal argument as false to hide pc's ships
 
     # Displaying the board with all ships placed (with computer's ships revealed)
     print("\nAll the ships have been placed. Here is the board for the game to start:")
@@ -339,11 +336,11 @@ def main():
         # User's turn
         if turn_count % 2 == 0:
             print("\nIt's your turn to attack the computer's ships.")
-            print_board(pc_grid, reveal= True)  # reveal true to show all the cells including pc's ships
+            print_board(pc_grid, reveal= False)  # reveal true to show all the cells including pc's ships
             pc_grid, game_over = users_attack(pc_grid, pc_ships, turn_count)
             turn_count += 1
             if game_over:
-                print("You lost, game over!")
+                print("Computer lost the game!")
                 break
 
         # Computer's turn (when turn_count is odd)
@@ -352,7 +349,7 @@ def main():
             users_grid, game_over = computers_attack(users_grid, users_ships, turn_count)
             turn_count += 1
             if game_over:
-                print("Computer lost!")
+                print("You lost, game over!")
                 break
         else:
             break
