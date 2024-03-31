@@ -21,9 +21,12 @@ column_letters = {
     "H": 7,
     "I": 8,
     "J": 9,
-}  
+} 
+
 user_bullet_used = 0   
 pc_bullet_used = 0
+bullet_num = 20
+ship_info = [("Battleship", 5), ("Cruiser", 4), ("Destroyer", 3), ("Battleship", 3)]  # List of Cell lengths of the 3 ships and their names
 
 def battleship_map():
     """Generates a 10x10 grid for the battleship game."""
@@ -71,8 +74,7 @@ def check_adjacency(grid, positions):
 def users_ships_positions(users_grid):
     """Allows the user to place their ships on the grid."""
     ships = []   # list to store the ships
-    ship_info = [ ("Battleship", 4), ("Cruiser", 3), ("Destroyer", 2)]  # List of tuples with Cell lengths of the 5 ships and their names
-    
+    global ship_info
     for ship_name, length in ship_info: # tuple unpacking
         print(f"Where do you want {ship_name} (length:{length})?")
         while True:
@@ -92,7 +94,7 @@ def users_ships_positions(users_grid):
                         column = column_letters[user_column]
                         break
                     else:
-                        print("Invalid column. Please choose a capital letter from A to J.")
+                        print("Invalid column. Please choose a letter from A to J.")
 
                 while True:
                     # orientation
@@ -129,16 +131,15 @@ def users_ships_positions(users_grid):
                 print("Please choose a different position.")
     return users_grid, ships
 
-def computers_ships_positions(pc_grid, users_grid, debug_mode = False):  
+def computers_ships_positions(pc_grid, debug_mode = False):  
     """Places the computer's ships randomly on the separate grid and this won't be revealed to the user."""   
     # Adding the debug mode for the PC ships to not display them on the board
     pc_ships_placed = 0    # to track the number of ships placed
     pc_ships = []
-    ship_info = [("Battleship", 4), ("Cruiser", 3), ("Destroyer", 2)]  # List of Cell lengths of the 3 ships and their names
+    global ship_info
 
     for ship_name, length in ship_info:   # iterating over each ship to place them on the grid
-        ship_placed = False   # to check if the ship is placed successfully
-        while not ship_placed:
+        while True:
             try:
                 positions = []
                 # Row
@@ -153,32 +154,38 @@ def computers_ships_positions(pc_grid, users_grid, debug_mode = False):
                         break
 
                 # Orientation
-                pc_ships_orientation = random.choice(["H", "V"])    # random choice for orientation
+                while True:
+                    pc_ships_orientation = random.choice(["H", "V"])    # random choice for orientation
                 
-                if pc_ships_orientation == "H":
-                    if column + length <= 10:    # not to place it out of the grid 
+                    if pc_ships_orientation == "H":
+                        if column + length > 10:    # not to place it out of the grid 
+                            raise ValueError
                         positions = [(row, column + i) for i in range(length)]
-                elif pc_ships_orientation == "V":
-                    if row + length <= 10:
+                    elif pc_ships_orientation == "V":
+                        if row + length > 10:
+                            raise ValueError
                         positions = [(row + i, column) for i in range(length)]
-                else:
-                    raise ValueError("Invalid orientation.")
+                    else:
+                        continue
 
-                if check_overlap(pc_grid, positions) or check_overlap(users_grid, positions):
-                    continue  # Overlap detected, prompt PC to choose a different position
-                if check_adjacency(pc_grid, positions) or check_adjacency(users_grid, positions):
-                    continue  # Adjacent to existing ship, prompt PC to choose a different position
+                    if check_overlap(pc_grid, positions):
+                        raise ValueError  # Overlap detected, prompt PC to choose a different position
+                    if check_adjacency(pc_grid, positions):
+                        raise ValueError  # Adjacent to existing ship, prompt PC to choose a different position
                 
-                # No overlap or adjacency, add the ship to the list and mark its positions on the grid
-                pc_ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
-                for position in positions:
-                    pc_grid[position[0]][position[1]] = "P"
-                ship_placed = True   # Ship placed successfully
-            except ValueError:
-                continue  # Continue to prompt PC to choose a different position
-
-        pc_ships_placed += 1
-
+                    # No overlap or adjacency, add the ship to the list and mark its positions on the grid
+                    pc_ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
+                    for position in positions:
+                        pc_grid[position[0]][position[1]] = "P"
+                    pc_ships_placed += 1
+                    #print_board(pc_grid)
+                   # print("Ship placed:", ship_name)
+                    break 
+                break                   
+            except ValueError as e:
+                print(e)
+                
+ 
     return pc_grid, pc_ships
 
 # Define the function to determine the current turn
@@ -188,7 +195,7 @@ def get_current_turn(turn_count):
 # step 4
 def users_attack(pc_grid, pc_ships, turn_count):
     """Allows the user to guess the computer's ship positions and remove them from the grid."""
-    bullet_num = 20
+    global bullet_num 
     global user_bullet_used
     while turn_count % 2 == 0:    #as long as turn count is an even number its users turn 
         print(f"\nLet's attack! Where do you want to shoot your bullet {user_bullet_used + 1} at? ")
@@ -219,7 +226,7 @@ def users_attack(pc_grid, pc_ships, turn_count):
         if target == "P":  # User hit the computer's ship
             print("\nHit! You hit part of a ship.")
             pc_grid[users_bullet_row][users_bullet_column] = "H"  # Mark as hit
-            print_board(pc_grid)
+            print_board(pc_grid, reveal = True)
 
             # Check if the ship is sunk
             for ship in pc_ships:
@@ -230,7 +237,7 @@ def users_attack(pc_grid, pc_ships, turn_count):
                         # Mark the ship as sunk on the grid
                         for position in ship["positions"]:
                             pc_grid[position[0]][position[1]] = "#" # Mark as sunk
-                        print_board(pc_grid)
+                        print_board(pc_grid, reveal= True)
                         pc_ships.remove(ship)  # Remove the ship from the list
                         print("Remaining ships:", pc_ships)   # for debugging the sunk condition 
                         print("All ships sunk?", all(ship["hits"] == ship["length"] for ship in pc_ships))
@@ -243,7 +250,7 @@ def users_attack(pc_grid, pc_ships, turn_count):
         else:  # User missed and hit the water
             print("\nMiss! You hit the water.")
             pc_grid[users_bullet_row][users_bullet_column] = "O"  # Mark as a miss on water 
-            print_board(pc_grid)  # Print the updated grid after each shot 
+            print_board(pc_grid, reveal = True)  # Print the updated grid after each shot 
         user_bullet_used += 1   #increment the bullet used      
         turn_count +=1   # increment the turn count after this bullet
     if bullet_num == user_bullet_used:
@@ -251,10 +258,9 @@ def users_attack(pc_grid, pc_ships, turn_count):
         print("You've used all your bullets. Game over.")
     return pc_grid, False
 
-# step 5
 def computers_attack(users_grid, users_ships,turn_count):
     """Computer attacks the user's grid randomly and gives the updated board."""
-    bullet_num = 20
+    global bullet_num 
     global pc_bullet_used
     while turn_count % 2 != 0 :    # as long as turn count is an odd number it's pc's turn
         print(f"Computer's turn to attack bullet {pc_bullet_used +1 }: ")
@@ -264,6 +270,7 @@ def computers_attack(users_grid, users_ships,turn_count):
 
         target = users_grid[computers_bullet_row][computers_bullet_column]
 
+        # hit and break:
         if target == "X":  # Computer hit the user's ship
             print("\nHit! Computer hit part of your ship.")
             users_grid[computers_bullet_row][computers_bullet_column] = "H"  # Mark as hit
@@ -290,17 +297,17 @@ def computers_attack(users_grid, users_ships,turn_count):
                             print("pc has fired all of their bullets. Game over!")
                             return users_grid, False
                         break
+            pc_bullet_used += 1   # if there is a hit increment the bullet
+            turn_count +=1   # if there is a hit break the loop to allow the user to play and increment the turn count
+        # miss and break
         else:  # Computer missed and hit the water
             print("Miss! Computer hit the water.")
             users_grid[computers_bullet_row][computers_bullet_column] = "O"  # Mark as a miss on water
             print_board(users_grid)   # print updated grid after each shot
+            # break removed for the loop to continue
+            pc_bullet_used += 1 
+            turn_count +=1  
             break # to exite the loop after the miss
-        # break removed for the loop to continue
-    pc_bullet_used += 1 
-    turn_count +=1     
-    if bullet_num == pc_bullet_used:       
-        # if all the bullets are finished game is over
-        print("Computer's turn is over.")
     return users_grid, False
 
 
@@ -310,14 +317,14 @@ def main():
     # User places the ships
     users_grid = battleship_map()
     print("\nInitial Board:")
-    print_board(users_grid, reveal = False)
+    print_board(users_grid, reveal = True)
     users_grid, users_ships = users_ships_positions(users_grid)   # allow the user to print thei ships on the grid
 
     # defining the pc's board
     pc_grid = battleship_map()
 
     # Computer places the ships
-    pc_grid, pc_ships = computers_ships_positions(pc_grid, users_grid, debug_mode= False)   # passing the reveal argument as false to hide pc's ships
+    pc_grid, pc_ships = computers_ships_positions(pc_grid, debug_mode= True)   # passing the reveal argument as false to hide pc's ships
 
     # Displaying the board with all ships placed (with computer's ships revealed)
     print("\nAll the ships have been placed. Here is the board for the game to start:")
@@ -332,7 +339,7 @@ def main():
         # User's turn
         if turn_count % 2 == 0:
             print("\nIt's your turn to attack the computer's ships.")
-            print_board(pc_grid, reveal= False)  # reveal true to show all the cells including pc's ships
+            print_board(pc_grid, reveal= True)  # reveal true to show all the cells including pc's ships
             pc_grid, game_over = users_attack(pc_grid, pc_ships, turn_count)
             turn_count += 1
             if game_over:
@@ -341,7 +348,6 @@ def main():
 
         # Computer's turn (when turn_count is odd)
         elif turn_count % 2 != 0:
-            print("\nIt's the computer's turn to attack your ships!")
             print_board(users_grid)
             users_grid, game_over = computers_attack(users_grid, users_ships, turn_count)
             turn_count += 1
