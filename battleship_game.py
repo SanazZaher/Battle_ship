@@ -120,6 +120,8 @@ def users_ships_positions(users_grid):
                     ships.append({"name": ship_name, "length": length, "positions": positions, "hits": 0})
                     for position in positions:
                         users_grid[position[0]][position[1]] = "X"
+                    print("----------------------------")
+                    print("")
                     print("\nCurrent Board:")
                     print_board(users_grid)
                     break  # Exit the loop if ship placement is successful
@@ -128,7 +130,7 @@ def users_ships_positions(users_grid):
 
             except ValueError as e:
                 print(e)
-                print("Please choose a different position.")
+                print("Invalid place. Please choose a different position.")
     return users_grid, ships
 
 def computers_ships_positions(pc_grid, debug_mode = False):  
@@ -224,9 +226,9 @@ def users_attack(pc_grid, pc_ships, turn_count):
         target = pc_grid[users_bullet_row][users_bullet_column]
 
         if target == "P":  # User hit the computer's ship
-            print("\nHit! You hit part of a ship.")
             pc_grid[users_bullet_row][users_bullet_column] = "H"  # Mark as hit
             print_board(pc_grid, reveal = False)
+            print("\nHit! You hit part of a ship.")
 
             # Check if the ship is sunk
             for ship in pc_ships:
@@ -245,9 +247,9 @@ def users_attack(pc_grid, pc_ships, turn_count):
                             return pc_grid, True   # game over situation is if all the ships are sunk or if all the bullets are fired
                         break   
         else:  # User missed and hit the water
-            print("\nMiss! You hit the water.")
             pc_grid[users_bullet_row][users_bullet_column] = "O"  # Mark as a miss on water 
             print_board(pc_grid, reveal = False)  # Print the updated grid after each shot 
+            print("\nMiss! You hit the water.")
         user_bullet_used += 1   #increment the bullet used      
         turn_count +=1   # increment the turn count after this bullet
     if bullet_num == user_bullet_used:
@@ -269,9 +271,9 @@ def computers_attack(users_grid, users_ships,turn_count):
 
         # hit and break:
         if target == "X":  # Computer hit the user's ship
-            print("\nHit! Computer hit part of your ship.")
             users_grid[computers_bullet_row][computers_bullet_column] = "H"  # Mark as hit
             print_board(users_grid)
+            print("\nHit! Computer hit part of your ship.")
 
             # check if the ship is sunk
             for ship in users_ships:
@@ -298,9 +300,9 @@ def computers_attack(users_grid, users_ships,turn_count):
             turn_count +=1   # if there is a hit break the loop to allow the user to play and increment the turn count
         # miss and break
         else:  # Computer missed and hit the water
-            print("Miss! Computer hit the water.")
             users_grid[computers_bullet_row][computers_bullet_column] = "O"  # Mark as a miss on water
             print_board(users_grid)   # print updated grid after each shot
+            print("Miss! Computer hit the water.")
             # break removed for the loop to continue
             pc_bullet_used += 1 
             turn_count +=1  
@@ -313,23 +315,24 @@ def main():
 
     # User places the ships
     users_grid = battleship_map()
+    print("\n-----Battleships War-----")
+    print("\n-----You have 20 bullets to destroy the computers ships and 4 ships to place on your board!-----")
     print("\nInitial Board:")
     print_board(users_grid, reveal = False)
     users_grid, users_ships = users_ships_positions(users_grid)   # allow the user to print thei ships on the grid
-
     # defining the pc's board
     pc_grid = battleship_map()
-
     # Computer places the ships
     pc_grid, pc_ships = computers_ships_positions(pc_grid, debug_mode= False)   # passing the reveal argument as false to hide pc's ships
-
+    print("----------------------------")
     # Displaying the board with all ships placed (with computer's ships revealed)
-    print("\nAll the ships have been placed. Here is the board for the game to start:")
+    print("\nAll your ships have been placed. Here is the board where computer placed their ships for the game to start:")
 
     # game loop
     game_over = False
     while True:   # start the loop until the game is over
-
+        print("----------------------------")
+        print("")
         # Debugging statement to track the current turn
         print(f"\nCurrent turn: {'User' if get_current_turn(turn_count) else 'Computer'}")
 
