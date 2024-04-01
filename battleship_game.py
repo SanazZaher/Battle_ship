@@ -22,7 +22,9 @@ column_letters = {
     "I": 8,
     "J": 9,
 } 
-
+initial_hit_direction = None
+last_hit_coordinates = None
+hit_confirmation_mode = False
 user_bullet_used = 0   
 pc_bullet_used = 0
 bullet_num = 20
@@ -180,14 +182,10 @@ def computers_ships_positions(pc_grid, debug_mode = False):
                     for position in positions:
                         pc_grid[position[0]][position[1]] = "P"
                     pc_ships_placed += 1
-                    #print_board(pc_grid)
-                   # print("Ship placed:", ship_name)
                     break 
                 break                   
             except ValueError as e:
                 print(e)
-                
- 
     return pc_grid, pc_ships
 
 # Define the function to determine the current turn
@@ -224,7 +222,9 @@ def users_attack(pc_grid, pc_ships, turn_count):
 
         # Check the target of the shot
         target = pc_grid[users_bullet_row][users_bullet_column]
-
+        if target == "H" or target == "O" or target == "#":
+            print("You have already shot this cell before. Try again!")
+            continue  # Restart the loop to let the user choose another cell
         if target == "P":  # User hit the computer's ship
             pc_grid[users_bullet_row][users_bullet_column] = "H"  # Mark as hit
             print_board(pc_grid, reveal = False)
@@ -245,7 +245,7 @@ def users_attack(pc_grid, pc_ships, turn_count):
                         if not pc_ships:
                             print("Congratulations! You've sunk all the computer's ships!")
                             return pc_grid, True   # game over situation is if all the ships are sunk or if all the bullets are fired
-                        break   
+                        break  
         else:  # User missed and hit the water
             pc_grid[users_bullet_row][users_bullet_column] = "O"  # Mark as a miss on water 
             print_board(pc_grid, reveal = False)  # Print the updated grid after each shot 
@@ -257,15 +257,45 @@ def users_attack(pc_grid, pc_ships, turn_count):
         print("You've used all your bullets. Game over.")
     return pc_grid, False
 
-def computers_attack(users_grid, users_ships,turn_count):
-    """Computer attacks the user's grid randomly and gives the updated board."""
-    global bullet_num 
-    global pc_bullet_used
-    while turn_count % 2 != 0 :    # as long as turn count is an odd number it's pc's turn
-        print(f"Computer's turn to attack bullet {pc_bullet_used +1 }: ")
+def attack_adjacent_hit(users_grid, row, column, initial_hit_direction=None):
+    """Attempts to attack an adjacent cell to confirm the direction of the ship."""
+    directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]  # Define possible directions: down, up, right, left
+    if initial_hit_direction is not None:   # to indicate the direction of the first hit
+        directions.remove(initial_hit_direction)
+        directions.insert(0, initial_hit_direction)   # if there is a hit remove it from the list and add it to the beginning to prioritize the cell
+    for dr, dc in directions:
+        new_row, new_col = row + dr, column + dc
+        if 0 <= new_row < 10 and 0 <= new_col < 10 and users_grid[new_row][new_col] != "H" and users_grid[new_row][new_col] != "O" and users_grid[new_row][new_col] != "#" :
+            # Check if the new position is within the grid and not previously attacked
+            return new_row, new_col, initial_hit_direction 
 
-        computers_bullet_row = random.randint(0, 9)
-        computers_bullet_column = random.randint(0, 9)
+    return None, None, None  # Return None for both row, column and direction if no valid adjacent cell is found
+
+def computers_attack(users_grid, users_ships, turn_count):
+    """Computer attacks the user's grid randomly and gives the updated board."""
+    global bullet_num
+    global pc_bullet_used
+    global last_hit_coordinates
+    global hit_confirmation_mode
+    global initial_hit_direction
+
+    while turn_count % 2 != 0:  # as long as turn count is an odd number it's pc's turn
+        print(f"Computer's turn to attack bullet {pc_bullet_used + 1}: ")
+        if hit_confirmation_mode:
+            # if the hit is confirmed then attack adjacent cells to H
+            next_row, next_col, direction = attack_adjacent_hit(users_grid, last_hit_coordinates[0], last_hit_coordinates[1], initial_hit_direction)
+            if next_row is not None and next_col is not None:
+                print(f"Computer is attacking adjacent cell: ({next_row}, {next_col})")
+                last_hit_coordinates = (next_row, next_col)  # Update last hit coordinates
+                if direction is not None:
+                    initial_hit_direction = direction
+            else:
+                hit_confirmation_mode = False  # if not continue with the random choice
+                initial_hit_direction = None
+                continue
+        else:
+            computers_bullet_row = random.randint(0, 9)
+            computers_bullet_column = random.randint(0, 9)
 
         target = users_grid[computers_bullet_row][computers_bullet_column]
 
@@ -274,6 +304,15 @@ def computers_attack(users_grid, users_ships,turn_count):
             users_grid[computers_bullet_row][computers_bullet_column] = "H"  # Mark as hit
             print_board(users_grid)
             print("\nHit! Computer hit part of your ship.")
+
+            # Check if adjacent cells can be attacked to confirm the direction of the ship
+            next_row, next_col, direction = attack_adjacent_hit(users_grid, computers_bullet_row, computers_bullet_column, initial_hit_direction)
+
+            if next_row is not None and next_col is not None:
+                print(f"Computer is attacking adjacent cell: ({next_row}, {next_col})")
+                last_hit_coordinates = (computers_bullet_row, computers_bullet_column)  # Update last hit coordinates
+                hit_confirmation_mode = True  # Enter hit confirmation mode
+                initial_hit_direction = direction
 
             # check if the ship is sunk
             for ship in users_ships:
@@ -287,7 +326,7 @@ def computers_attack(users_grid, users_ships,turn_count):
                             users_grid[position[0]][position[1]] = "#"  # Mark as sunk
                         print_board(users_grid)
                         users_ships.remove(ship)  # Remove the ship from the list
-                            
+
                         # Check if all user ships are sunk
                         if all(ship["hits"] == ship["length"] for ship in users_ships):
                             print("Game Over. Computer sunk all your ships!")
@@ -296,20 +335,18 @@ def computers_attack(users_grid, users_ships,turn_count):
                             print("pc has fired all of their bullets. Game over!")
                             return users_grid, False
                         break
-            pc_bullet_used += 1   # if there is a hit increment the bullet
-            turn_count +=1   # if there is a hit break the loop to allow the user to play and increment the turn count
+            pc_bullet_used += 1  # if there is a hit increment the bullet
+            turn_count += 1  # if there is a hit break the loop to allow the user to play and increment the turn count
         # miss and break
         else:  # Computer missed and hit the water
             users_grid[computers_bullet_row][computers_bullet_column] = "O"  # Mark as a miss on water
-            print_board(users_grid)   # print updated grid after each shot
+            print_board(users_grid)  # print updated grid after each shot
             print("Miss! Computer hit the water.")
             # break removed for the loop to continue
-            pc_bullet_used += 1 
-            turn_count +=1  
-            break # to exite the loop after the miss
+            pc_bullet_used += 1
+            turn_count += 1
+            break  # to exit the loop after the miss
     return users_grid, False
-
-
 def main():
     turn_count = 0  # Initialize turn count
 
