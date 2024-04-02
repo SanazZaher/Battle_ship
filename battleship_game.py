@@ -260,9 +260,9 @@ def users_attack(pc_grid, pc_ships, turn_count):
 def attack_adjacent_hit(users_grid, row, column, initial_hit_direction=None):
     """Attempts to attack an adjacent cell to confirm the direction of the ship."""
     directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]  # Define possible directions: down, up, right, left
-    if initial_hit_direction is not None:   # to indicate the direction of the first hit
+    if initial_hit_direction is not None:   # to indicate the direction of the first hit and not hit in the same direction
         directions.remove(initial_hit_direction)
-        directions.insert(0, initial_hit_direction)   # if there is a hit remove it from the list and add it to the beginning to prioritize the cell
+        directions.insert(0, initial_hit_direction)   # if there is a hit remove it from the list and add it to the beginning to prioritize the direction
     for dr, dc in directions:
         new_row, new_col = row + dr, column + dc
         if 0 <= new_row < 10 and 0 <= new_col < 10 and users_grid[new_row][new_col] != "H" and users_grid[new_row][new_col] != "O" and users_grid[new_row][new_col] != "#" :
@@ -278,7 +278,8 @@ def computers_attack(users_grid, users_ships, turn_count):
     global last_hit_coordinates
     global hit_confirmation_mode
     global initial_hit_direction
-
+    computers_bullet_row = 0
+    computers_bullet_column = 0
     while turn_count % 2 != 0:  # as long as turn count is an odd number it's pc's turn
         print(f"Computer's turn to attack bullet {pc_bullet_used + 1}: ")
         if hit_confirmation_mode:
@@ -296,7 +297,6 @@ def computers_attack(users_grid, users_ships, turn_count):
         else:
             computers_bullet_row = random.randint(0, 9)
             computers_bullet_column = random.randint(0, 9)
-
         target = users_grid[computers_bullet_row][computers_bullet_column]
 
         # hit and break:
@@ -310,7 +310,7 @@ def computers_attack(users_grid, users_ships, turn_count):
 
             if next_row is not None and next_col is not None:
                 print(f"Computer is attacking adjacent cell: ({next_row}, {next_col})")
-                last_hit_coordinates = (computers_bullet_row, computers_bullet_column)  # Update last hit coordinates
+                last_hit_coordinates = (next_row, next_col)  # Update last hit coordinates
                 hit_confirmation_mode = True  # Enter hit confirmation mode
                 initial_hit_direction = direction
 
@@ -338,14 +338,14 @@ def computers_attack(users_grid, users_ships, turn_count):
             pc_bullet_used += 1  # if there is a hit increment the bullet
             turn_count += 1  # if there is a hit break the loop to allow the user to play and increment the turn count
         # miss and break
-        else:  # Computer missed and hit the water
+        elif target == ".":  # Computer missed and hit the water
             users_grid[computers_bullet_row][computers_bullet_column] = "O"  # Mark as a miss on water
             print_board(users_grid)  # print updated grid after each shot
             print("Miss! Computer hit the water.")
             # break removed for the loop to continue
             pc_bullet_used += 1
             turn_count += 1
-            break  # to exit the loop after the miss
+            
     return users_grid, False
 def main():
     turn_count = 0  # Initialize turn count
