@@ -25,7 +25,7 @@ column_letters = {
 
 user_bullet_used = 0   
 pc_bullet_used = 0
-bullet_num = 20
+bullet_num = 50
 ship_info = [("Battleship", 5), ("Cruiser", 4), ("Destroyer", 3), ("Battleship", 3)]  # List of Cell lengths of the 3 ships and their names
 
 def battleship_map():
@@ -186,14 +186,11 @@ def computers_ships_positions(pc_grid, debug_mode = False):
                 break                   
             except ValueError as e:
                 print(e)
-                
- 
     return pc_grid, pc_ships
 
-# Define the function to determine the current turn
 def get_current_turn(turn_count):
+    """function to determine the current turn."""
     return turn_count % 2 == 0  # Even turns correspond to the user's turn, odd turns correspond to the computer's turn
-
 # step 4
 def users_attack(pc_grid, pc_ships, turn_count):
     """Allows the user to guess the computer's ship positions and remove them from the grid."""
@@ -254,7 +251,7 @@ def users_attack(pc_grid, pc_ships, turn_count):
         turn_count +=1   # increment the turn count after this bullet
     if bullet_num == user_bullet_used:
         # If all bullets are fired and all ships are not sunk, the game is over
-        print("You've used all your bullets. Game over.")
+        print("You've used all your bullets. Game over!")
     return pc_grid, False
 
 def computers_attack(users_grid, users_ships,turn_count):
@@ -316,7 +313,7 @@ def main():
     # User places the ships
     users_grid = battleship_map()
     print("\n-----Battleships War-----")
-    print("\n-----You have 20 bullets to destroy the computers ships and 4 ships to place on your board!-----")
+    print("\n-----You have 50 bullets to destroy the computers ships and 4 ships to place on your board!-----")
     print("\nInitial Board:")
     print_board(users_grid, reveal = False)
     users_grid, users_ships = users_ships_positions(users_grid)   # allow the user to print thei ships on the grid
@@ -345,7 +342,9 @@ def main():
             if game_over:
                 print("Computer lost the game!")
                 break
-
+            if bullet_num == user_bullet_used:
+                print("You've used all your bullets. Game over!")
+                break
         # Computer's turn (when turn_count is odd)
         elif turn_count % 2 != 0:
             print_board(users_grid)
@@ -353,6 +352,8 @@ def main():
             turn_count += 1
             if game_over:
                 print("You lost, game over!")
+                break
+            if bullet_num == pc_bullet_used:
                 break
         else:
             break
